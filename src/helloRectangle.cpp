@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#define OK 1
+#define ERR 0
 #define STR(X) #X
 
 #define VERTEX_SRC "\
@@ -68,31 +70,15 @@ void mainLoop(GLuint & shaderProgram, GLuint & VAO, GLFWwindow * window){
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
     }
 }
 
-int main(){
-
-    GLfloat vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
-    };
+GLFWwindow * glfwSetUp(){
     GLFWwindow * window;
-    GLuint VBO;
-    GLuint VAO;
-    GLuint vertexShader;
-    GLuint fragmentShader;
-    GLuint shaderProgram;
-    GLint success;
-    GLchar infoLog[512];
-    const GLchar* vertexShaderSource = VERTEX_SRC;
-    const GLchar* fragmentShaderSource = FRAGMENT_SRC;
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -103,46 +89,76 @@ int main(){
     if(!window){
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return -1;
+        return nullptr;
     }
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, key_callback);
 
+    return window;
+}
+
+int glewSetUp(){
     glewExperimental = GL_TRUE;
     if(glewInit() != GLEW_OK){
         std::cout << "Failed to initialize GLEW" << std::endl;
-        return -1;
+        return ERR;
+    }
+    return OK;
+}
+
+int main(){
+
+    GLfloat vertices[] = {
+         0.5f,  0.5f, 0.0f, // Top right
+         0.5f, -0.5f, 0.0f, // Bottom right
+        -0.5f, -0.5f, 0.0f, // Bottom left
+        -0.5f,  0.5f, 0.0f  // Top left
+    };
+    GLuint indexes[] = { // Nota: empezamos desde el 0
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+
+    GLFWwindow * window;
+    GLuint VBO;
+    GLuint VAO;
+    GLuint EBO;
+    GLuint vertexShader;
+    GLuint fragmentShader;
+    GLuint shaderProgram;
+    GLint success;
+    GLchar infoLog[512];
+    const GLchar* vertexShaderSource = VERTEX_SRC;
+    const GLchar* fragmentShaderSource = FRAGMENT_SRC;
+
+    if((window = glfwSetUp()) == nullptr)
+        return 1;
+
+    if(glewSetUp() == ERR){
+        glfwTerminate();
+        return 1;
     }
 
     glGenVertexArrays(1, &VAO);
-    // obtenemos un id unico para el buffer de vertices
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     compileShader(vertexShader, GL_VERTEX_SHADER, &vertexShaderSource, "VERTEX");
     compileShader(fragmentShader, GL_FRAGMENT_SHADER, &fragmentShaderSource, "FRAGMENT");
     linkShaders(shaderProgram, vertexShader, fragmentShader);
-
-    // ya no necesitamos los shaders, asi que los liberamos
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // enlazamos el vertex array object
+
     glBindVertexArray(VAO);
-    // bindeamos el buffer de OpenGL al que hemos creado
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // copiamos nuestros vertices al buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // hemos de indicarle a OpenGL que input vamos a determinar (location = 0)
-    // la dimension del atributo del vertice (3 porque pasamos vertices en 3D)
-    // el tipo de datos de los vertices
-    // si OpenGL deberia normalizar las coordenadas o no
-    // y el comienzo del vector de datos
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid*)0);
-    // NOTA: los atributos de vertices toman los datos del VBO que esta actualmente enlazado al GL_ARRAY_BUFFER
-    // a la hora de llamar a glVertexAttribPointer. de esta forma, hemos dicho que el vertice (entrada del shader)
-    // de localizacion 0 (en el shader, location = 0) tomara los datos del actual VBO.
-    glEnableVertexAttribArray(0);
-    // des-enlazamos el VAO
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
     glViewport(0, 0, 800, 600);
