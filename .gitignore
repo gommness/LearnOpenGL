@@ -1,0 +1,7 @@
+**/build
+**/CMakeFiles
+*.png
+*.html
+*.docx
+*.o
+*.js
