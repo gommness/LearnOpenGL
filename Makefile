@@ -3,13 +3,15 @@ BUILD = build
 OBJD = build
 LIBD = lib
 
+CFLAGS= -g -Wall
+
 TRIANGLE_TARGET = helloTriangle
 _TRIANGLE_OBJ = helloTriangle.o
 TRIANGLE_OBJ = $(addprefix ${OBJD}/,${_TRIANGLE_OBJ})
 TRIANGLE_INCLUDE = 
 
 TRIFORCE_TARGET = helloTriforce
-_TRIFORCE_OBJ = helloTriforce.o
+_TRIFORCE_OBJ = helloTriforce2.o
 TRIFORCE_OBJ = $(addprefix ${OBJD}/,${_TRIFORCE_OBJ})
 TRIFORCE_INCLUDE = 
 
