@@ -21,15 +21,22 @@
         void main(){\n\
             color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n\
         }"
+#define FRAGMENT_SRC_2 "\
+        #version 330 core\n\
+        out vec4 color;\n\
+        void main(){\n\
+            color = vec4(0f, 1.0f, 1.0f, 1.0f);\n\
+        }"
 
 class Triangle{
     public:
         GLfloat * vertices;
         size_t nVertices;
+        GLuint shader;
         GLuint VBO;
         GLuint VAO;
 
-    Triangle(GLfloat * vertices, size_t nVertices): vertices(vertices), nVertices(nVertices){
+    Triangle(GLfloat * vertices, size_t nVertices, GLuint shader): vertices(vertices), nVertices(nVertices), shader(shader){
         glGenVertexArrays(1, &this->VAO);
         glGenBuffers(1, &this->VBO);
 
@@ -42,6 +49,7 @@ class Triangle{
     }
 
     void render(){
+        glUseProgram(shader);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, nVertices);
         glBindVertexArray(0);
@@ -81,6 +89,7 @@ GLint linkShaders(GLuint & shaderProgram, GLuint & vertexShader, GLuint & fragme
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
     }
+    return success;
 }
 
 void mainLoop(GLuint & shaderProgram, GLFWwindow * window, std::vector<Triangle*> & triangles){
@@ -90,8 +99,7 @@ void mainLoop(GLuint & shaderProgram, GLFWwindow * window, std::vector<Triangle*
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
-        for(int i = 0; i < triangles.size(); i++){
+        for(size_t i = 0; i < triangles.size(); i++){
             triangles[i]->render();
         }
         glfwSwapBuffers(window);
@@ -144,10 +152,10 @@ int main(){
     GLuint vertexShader;
     GLuint fragmentShader;
     GLuint shaderProgram;
-    GLint success;
-    GLchar infoLog[512];
+    GLuint shaderProgram2;
     const GLchar* vertexShaderSource = VERTEX_SRC;
     const GLchar* fragmentShaderSource = FRAGMENT_SRC;
+    const GLchar* fragmentShaderSource2 = FRAGMENT_SRC_2;
 
     window = windowInit();
     if (!window){
@@ -160,16 +168,20 @@ int main(){
         return 1;
     }
 
-    Triangle t1(vertices_t1, sizeof(vertices_t1));
-    Triangle t2(vertices_t2, sizeof(vertices_t2));
-    Triangle t3(vertices_t3, sizeof(vertices_t3));
-    std::vector<Triangle*> triangles = {&t1, &t2, &t3};
-
     compileShader(vertexShader, GL_VERTEX_SHADER, &vertexShaderSource, "VERTEX");
     compileShader(fragmentShader, GL_FRAGMENT_SHADER, &fragmentShaderSource, "FRAGMENT");
     linkShaders(shaderProgram, vertexShader, fragmentShader);
+    glDeleteShader(fragmentShader);
+    compileShader(fragmentShader, GL_FRAGMENT_SHADER, &fragmentShaderSource2, "FRAGMENT");
+    linkShaders(shaderProgram2, vertexShader, fragmentShader);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    Triangle t1(vertices_t1, sizeof(vertices_t1), shaderProgram);
+    Triangle t2(vertices_t2, sizeof(vertices_t2), shaderProgram);
+    Triangle t3(vertices_t3, sizeof(vertices_t3), shaderProgram2);
+    std::vector<Triangle*> triangles = {&t1, &t2, &t3};
+
 
     glViewport(0, 0, 800, 600);
 
