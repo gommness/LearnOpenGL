@@ -59,6 +59,7 @@ GLint linkShaders(GLuint & shaderProgram, GLuint & vertexShader, GLuint & fragme
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
     }
+    return success;
 }
 
 void mainLoop(GLuint & shaderProgram, GLuint & VAO, GLFWwindow * window){
@@ -126,8 +127,6 @@ int main(){
     GLuint vertexShader;
     GLuint fragmentShader;
     GLuint shaderProgram;
-    GLint success;
-    GLchar infoLog[512];
     const GLchar* vertexShaderSource = VERTEX_SRC;
     const GLchar* fragmentShaderSource = FRAGMENT_SRC;
 

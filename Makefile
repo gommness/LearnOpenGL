@@ -5,8 +5,10 @@ LIBD = lib
 
 CFLAGS= -g -Wall
 
+_SHADERS_OBJ = shader.o vertexShader.o fragmentShader.o shaderProgram.o
+
 TRIANGLE_TARGET = helloTriangle
-_TRIANGLE_OBJ = helloTriangle.o
+_TRIANGLE_OBJ = helloTriangle.o ${_SHADERS_OBJ}
 TRIANGLE_OBJ = $(addprefix ${OBJD}/,${_TRIANGLE_OBJ})
 TRIANGLE_INCLUDE = 
 
