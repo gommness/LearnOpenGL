@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <cmath>
 #include <iostream>
 #include <vector>
 #include <assert.h>
@@ -31,7 +32,11 @@ class Triangle{
     }
 
     void render(){
+        GLfloat timeValue = glfwGetTime();
+        GLfloat greenValue = (sin(timeValue)/2)+0.5;
+        GLint vertexColorLocation = glGetUniformLocation(shader, "ourColor");
         glUseProgram(shader);
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, nVertices);
         glBindVertexArray(0);
@@ -102,7 +107,7 @@ int main(){
     assert(sizeof(vertices_t3) % 3 == 0);
     GLFWwindow * window;
     VertexShader vertex("src/shaders/myShader.vert");
-    FragmentShader fragment("src/shaders/myShader.frag");
+    FragmentShader fragment("src/shaders/uniformExercise.frag");
     ShaderProgram shader(vertex, fragment, "simpleShader");
 
     window = windowInit();
@@ -135,3 +140,4 @@ int main(){
     glfwTerminate();
     return 0;
 }
+

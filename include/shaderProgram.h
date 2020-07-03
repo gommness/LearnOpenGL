@@ -11,7 +11,8 @@ private:
     std::string name;
 
 public:
-    ShaderProgram(VertexShader & vertex, FragmentShader & fragment, std::string & name): shaderProgram(0), vertex(vertex),
+    ShaderProgram(VertexShader & vertex, FragmentShader & fragment, const std::string & name): shaderProgram(0), vertex(vertex),
                                                                                              fragment(fragment), name(name){}
     GLint link();
+    operator GLuint() const;
 };

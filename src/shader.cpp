@@ -3,7 +3,8 @@
 #include <iostream>
 
 Shader::Shader(const std::string  & filename, GLuint type){
-    load(filename, type);
+    if(load(filename, type) == -1)
+        std::cerr << "error cargando fichero" << std::endl;
     shader = 0;
     this->name = filename;
 }
@@ -27,6 +28,7 @@ GLint Shader::compile(){
         //TODO sustituir esto por una excepcion
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
         std::cerr << "ERROR::SHADER" << name << "::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cerr << "shadercode:\n" << code << std::endl;
     }
     return success;
 }

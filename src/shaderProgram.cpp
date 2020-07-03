@@ -15,3 +15,7 @@ GLint ShaderProgram::link(){
     }
     return success;
 }
+
+ShaderProgram::operator GLuint() const{
+    return shaderProgram;
+}
