@@ -6,13 +6,15 @@
 class ShaderProgram {
 private:
     GLuint shaderProgram;
-    VertexShader &vertex;
-    FragmentShader &fragment;
     std::string name;
 
+    GLint link(const VertexShader & vertex, const FragmentShader & fragment);
 public:
-    ShaderProgram(VertexShader & vertex, FragmentShader & fragment, const std::string & name): shaderProgram(0), vertex(vertex),
-                                                                                             fragment(fragment), name(name){}
-    GLint link();
+    ShaderProgram(const std::string & vertexName, const std::string & fragmentName, const std::string & name="");
+    ShaderProgram(const VertexShader & vertex, const FragmentShader & fragment, const std::string & name="");
+    void use();
+    GLint setUniform(const std::string & uniform, bool value);
+    GLint setUniform(const std::string & uniform, int value);
+    GLint setUniform(const std::string & uniform, float value);
     operator GLuint() const;
 };

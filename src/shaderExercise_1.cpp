@@ -83,8 +83,25 @@ GLFWwindow * windowInit(){
     return window;
 }
 
+GLFWwindow* init(){
+    GLFWwindow * window;
+    window = windowInit();
+    if (!window){
+        return nullptr;
+    }
+
+    glewExperimental = GL_TRUE;
+    if(glewInit() != GLEW_OK){
+        std::cout << "Failed to initialize GLEW" << std::endl;
+        glfwTerminate();
+        return nullptr;
+    }
+    return window;
+}
 
 int main(){
+    GLFWwindow * window = init();
+    if(!window) return 1;
 
     GLfloat vertices_t1[] = {
         -0.5f,  -0.5f, 0.0f, // t1 bottom left
@@ -101,31 +118,13 @@ int main(){
          0.25f,  0.0f, 0.0f, // t2 top
          0.0f,   0.5f, 0.0f  // t3 top
     };
-
     assert(sizeof(vertices_t1) % 3 == 0);
     assert(sizeof(vertices_t2) % 3 == 0);
     assert(sizeof(vertices_t3) % 3 == 0);
-    GLFWwindow * window;
+
     VertexShader vertex("src/shaders/myShader.vert");
     FragmentShader fragment("src/shaders/uniformExercise.frag");
     ShaderProgram shader(vertex, fragment, "simpleShader");
-
-    window = windowInit();
-    if (!window){
-        return 1;
-    }
-
-    glewExperimental = GL_TRUE;
-    if(glewInit() != GLEW_OK){
-        std::cout << "Failed to initialize GLEW" << std::endl;
-        return 1;
-    }
-
-    vertex.compile();
-    fragment.compile();
-    shader.link();
-    fragment.unload();
-    vertex.unload();
 
     Triangle t1(vertices_t1, sizeof(vertices_t1), shader);
     Triangle t2(vertices_t2, sizeof(vertices_t2), shader);

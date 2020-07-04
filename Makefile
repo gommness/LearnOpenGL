@@ -3,7 +3,7 @@
 #   COMPILER
 ########################################################################################
 CC = g++
-CFLAG = -Wall -g
+CFLAGS = -Wall -g
 LIBS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lGLEW -lGLU -lrt -lXxf86vm -lXinerama
 
 ########################################################################################
@@ -25,7 +25,7 @@ _SHADERS_OBJ = shader.o vertexShader.o fragmentShader.o shaderProgram.o
 ########################################################################################
 #   SHADERS EN OPENGL
 ########################################################################################
-_SHADER_CODE = myShader.vert myShader.frag
+_SHADER_CODE = myShader.vert myShader.frag uniformExercise.frag interpolationExercise.vert interpolationExercise.frag
 SHADER_CODE = $(addprefix ${SHADERD}/,${_SHADER_CODE})
 
 ########################################################################################
@@ -56,11 +56,17 @@ SHADER_EXERCISE_1_OBJ = $(addprefix ${OBJD}/,${_SHADER_EXERCISE_1_OBJ})
 SHADER_EXERCISE_1_INCLUDE = 
 SHADER_EXERCISE_1_REQUISITES = ${SHADER_EXERCISE_1_OBJ} ${SHADER_CODE}
 
+SHADER_EXERCISE_2_TARGET = shaderExercise_2
+_SHADER_EXERCISE_2_OBJ = shaderExercise_2.o ${_SHADERS_OBJ}
+SHADER_EXERCISE_2_OBJ = $(addprefix ${OBJD}/,${_SHADER_EXERCISE_2_OBJ})
+SHADER_EXERCISE_2_INCLUDE = 
+SHADER_EXERCISE_2_REQUISITES = ${SHADER_EXERCISE_2_OBJ} ${SHADER_CODE}
+
 
 ########################################################################################
 #   TARGET OF PROJECTS TO COMPILE
 ########################################################################################
-ALL_TARGETS = ${TRIANGLE_TARGET} ${RECTANGLE_TARGET} ${TRIFORCE_TARGET} ${SHADER_EXERCISE_1_TARGET}
+ALL_TARGETS = ${TRIANGLE_TARGET} ${RECTANGLE_TARGET} ${TRIFORCE_TARGET} ${SHADER_EXERCISE_1_TARGET} ${SHADER_EXERCISE_2_TARGET}
 
 
 
@@ -77,16 +83,19 @@ clean:
 	-rm -f ${BUILD}/*
 
 ${TRIANGLE_TARGET}: ${TRIANGLE_REQUISITES}
-	${CC} ${CFLAGS} ${INCLUDES} -o ${BUILD}/$@ ${TRIANGLE_OBJ} ${LIBS}
+	${CC} ${CFLAGS} -o ${BUILD}/$@ ${TRIANGLE_OBJ} ${LIBS}
 
 ${RECTANGLE_TARGET}: ${RECTANGLE_REQUISITES}
-	${CC} ${CFLAGS} ${INCLUDES} -o ${BUILD}/$@ ${RECTANGLE_OBJ} ${LIBS}
+	${CC} ${CFLAGS} -o ${BUILD}/$@ ${RECTANGLE_OBJ} ${LIBS}
 
 ${TRIFORCE_TARGET}: ${TRIFORCE_REQUISITES}
-	${CC} ${CFLAGS} ${INCLUDES} -o ${BUILD}/$@ ${TRIFORCE_OBJ} ${LIBS}
+	${CC} ${CFLAGS} -o ${BUILD}/$@ ${TRIFORCE_OBJ} ${LIBS}
 
 ${SHADER_EXERCISE_1_TARGET}: ${SHADER_EXERCISE_1_REQUISITES}
-	${CC} ${CFLAGS} ${INCLUDES} -o ${BUILD}/$@ ${SHADER_EXERCISE_1_OBJ} ${LIBS}
+	${CC} ${CFLAGS} -o ${BUILD}/$@ ${SHADER_EXERCISE_1_OBJ} ${LIBS}
+
+${SHADER_EXERCISE_2_TARGET}: ${SHADER_EXERCISE_2_REQUISITES}
+	${CC} ${CFLAGS} -o ${BUILD}/$@ ${SHADER_EXERCISE_2_OBJ} ${LIBS}
 
 ${BUILD}/%.o: ${SRCD}/%.cpp
 	${CC} ${CFLAGS} ${INCLUDES} -c $< -o $@

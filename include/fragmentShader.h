@@ -3,6 +3,5 @@
 
 class FragmentShader : public Shader{
 public:
-    FragmentShader();
     FragmentShader(const std::string  & filename);
 };

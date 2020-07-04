@@ -1,3 +1,4 @@
+#include "../include/utils.h"
 #include "../include/shader.h"
 #include <cstdio>
 #include <iostream>
@@ -5,8 +6,7 @@
 Shader::Shader(const std::string  & filename, GLuint type){
     if(load(filename, type) == -1)
         std::cerr << "error cargando fichero" << std::endl;
-    shader = 0;
-    this->name = filename;
+    this->compile();
 }
 
 Shader::~Shader(){
@@ -50,15 +50,10 @@ int Shader::load(const std::string  & filename, const GLuint  & type){
     return code.size();
 }
 
-void Shader::unload(){
-    if(shader != 0)
-        glDeleteShader(shader);
-    code.resize(0);
-    name="";
-    type=0;
-    shader=0;
-}
-
 Shader::operator GLuint() const{
     return shader;
+}
+
+std::string Shader::getName() const{
+    return name;
 }

@@ -2,10 +2,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <cmath>
 #include <iostream>
 #include <vector>
 #include <assert.h>
 
+#include "../include/utils.h"
 #include "../include/shaderProgram.h"
 
 #define NDEBUG
@@ -25,13 +27,20 @@ class Triangle{
         glBindVertexArray(VAO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, nVertices, vertices, GL_STATIC_DRAW);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid*)0);
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (GLvoid*)0);
             glEnableVertexAttribArray(0);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (GLvoid*)(3*sizeof(float)));
+            glEnableVertexAttribArray(1);
         glBindVertexArray(0);
     }
 
     void render(){
+        GLfloat timeValue = glfwGetTime();
+        GLfloat greenValue = (sin(timeValue)/2)+0.5;
+        GLint vertexColorLocation = glGetUniformLocation(shader, "ourColor");
         glUseProgram(shader);
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, nVertices);
         glBindVertexArray(0);
@@ -95,38 +104,23 @@ GLFWwindow* init(){
 }
 
 int main(){
+
     GLFWwindow * window = init();
     if(!window) return 1;
 
     GLfloat vertices_t1[] = {
-        -0.5f,  -0.5f, 0.0f, // t1 bottom left
-         0.0f,  -0.5f, 0.0f, // t1 bottom right
-        -0.25f,  0.0f, 0.0f // t1 top
-    };
-    GLfloat vertices_t2[] = {
-         0.0f,  -0.5f, 0.0f, // t2 bottom left
-         0.5f,  -0.5f, 0.0f, // t2 bottom right
-         0.25f,  0.0f, 0.0f // t2 top
-    };
-    GLfloat vertices_t3[] = {
-        -0.25f,  0.0f, 0.0f, // t1 top
-         0.25f,  0.0f, 0.0f, // t2 top
-         0.0f,   0.5f, 0.0f  // t3 top
+         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // t1 bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // t1 bottom left
+         0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // t1 top
     };
     assert(sizeof(vertices_t1) % 3 == 0);
-    assert(sizeof(vertices_t2) % 3 == 0);
-    assert(sizeof(vertices_t3) % 3 == 0);
 
-    VertexShader vertex("src/shaders/myShader.vert");
-    FragmentShader fragment("src/shaders/myShader.frag");
+    VertexShader vertex("src/shaders/interpolationExercise.vert");
+    FragmentShader fragment("src/shaders/interpolationExercise.frag");
     ShaderProgram shader(vertex, fragment, "simpleShader");
 
-
     Triangle t1(vertices_t1, sizeof(vertices_t1), shader);
-    Triangle t2(vertices_t2, sizeof(vertices_t2), shader);
-    Triangle t3(vertices_t3, sizeof(vertices_t3), shader);
-    std::vector<Triangle*> triangles = {&t1, &t2, &t3};
-
+    std::vector<Triangle*> triangles = {&t1};
 
     glViewport(0, 0, 800, 600);
 
@@ -135,3 +129,5 @@ int main(){
     glfwTerminate();
     return 0;
 }
+
+
