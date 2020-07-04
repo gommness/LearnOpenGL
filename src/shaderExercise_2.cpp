@@ -16,11 +16,11 @@ class Triangle{
     public:
         GLfloat * vertices;
         size_t nVertices;
-        GLuint shader;
+        ShaderProgram & shader;
         GLuint VBO;
         GLuint VAO;
 
-    Triangle(GLfloat * vertices, size_t nVertices, GLuint shader): vertices(vertices), nVertices(nVertices), shader(shader){
+    Triangle(GLfloat * vertices, size_t nVertices, ShaderProgram & shader): vertices(vertices), nVertices(nVertices), shader(shader){
         glGenVertexArrays(1, &this->VAO);
         glGenBuffers(1, &this->VBO);
 
@@ -36,11 +36,10 @@ class Triangle{
     }
 
     void render(){
-        GLfloat timeValue = glfwGetTime();
-        GLfloat greenValue = (sin(timeValue)/2)+0.5;
-        GLint vertexColorLocation = glGetUniformLocation(shader, "ourColor");
-        glUseProgram(shader);
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+        static float offset = 0;
+        offset +=0.001f;
+        shader.use();
+        shader.setUniform("offset", offset);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, nVertices);
         glBindVertexArray(0);
@@ -115,8 +114,8 @@ int main(){
     };
     assert(sizeof(vertices_t1) % 3 == 0);
 
-    VertexShader vertex("src/shaders/interpolationExercise.vert");
-    FragmentShader fragment("src/shaders/interpolationExercise.frag");
+    VertexShader vertex("src/shaders/positionalColor.vert");
+    FragmentShader fragment("src/shaders/positionalColor.frag");
     ShaderProgram shader(vertex, fragment, "simpleShader");
 
     Triangle t1(vertices_t1, sizeof(vertices_t1), shader);

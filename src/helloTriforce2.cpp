@@ -14,11 +14,11 @@ class Triangle{
     public:
         GLfloat * vertices;
         size_t nVertices;
-        GLuint shader;
+        ShaderProgram & shader;
         GLuint VBO;
         GLuint VAO;
 
-    Triangle(GLfloat * vertices, size_t nVertices, GLuint shader): vertices(vertices), nVertices(nVertices), shader(shader){
+    Triangle(GLfloat * vertices, size_t nVertices, ShaderProgram & shader): vertices(vertices), nVertices(nVertices), shader(shader){
         glGenVertexArrays(1, &this->VAO);
         glGenBuffers(1, &this->VBO);
 
@@ -31,7 +31,8 @@ class Triangle{
     }
 
     void render(){
-        glUseProgram(shader);
+        shader.use();
+
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, nVertices);
         glBindVertexArray(0);
