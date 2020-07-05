@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
+#include <SOIL/SOIL.h>
 
 #include <cmath>
 #include <iostream>
@@ -19,14 +19,13 @@ class Rectangle{
         GLuint * indexes;
         size_t nIndexes;
         ShaderProgram & shader;
-        GLuint texture;
         GLuint VBO;
         GLuint VAO;
         GLuint EBO;
 
-    Rectangle(GLfloat * vertices, size_t nVertices, GLuint * indexes, size_t nIndexes, GLuint texture, ShaderProgram & shader): vertices(vertices), nVertices(nVertices), 
-                                                                                                                indexes(indexes), nIndexes(nIndexes), shader(shader),
-                                                                                                                texture(texture){
+    Rectangle(GLfloat * vertices, size_t nVertices, GLuint * indexes, size_t nIndexes, ShaderProgram & shader): vertices(vertices), nVertices(nVertices), 
+                                                                                                                indexes(indexes), nIndexes(nIndexes), shader(shader)
+                                                                                                                {
         glGenVertexArrays(1, &this->VAO);
         glGenBuffers(1, &this->VBO);
         glGenBuffers(1, &EBO);
@@ -42,11 +41,11 @@ class Rectangle{
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (GLvoid*)(3*sizeof(float)));
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (GLvoid*)(6*sizeof(float)));
+            glEnableVertexAttribArray(2);
         glBindVertexArray(0);
     }
 
     void render(){
-        glBindTexture(GL_TEXTURE_2D, texture);
         shader.use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -60,13 +59,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-void mainLoop(GLuint shaderProgram, GLFWwindow * window, std::vector<Rectangle*> & rectangles){
+void mainLoop(GLuint shaderProgram, GLFWwindow * window, std::vector<Rectangle*> & rectangles, GLuint texture){
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glBindTexture(GL_TEXTURE_2D, texture);
         for(size_t i = 0; i < rectangles.size(); i++){
             rectangles[i]->render();
         }
@@ -127,6 +127,13 @@ int main(){
         1, 2, 3  // second triangle
     };
 
+    VertexShader vertex("src/shaders/textureExercise.vert");
+    FragmentShader fragment("src/shaders/textureExercise.frag");
+    ShaderProgram shader(vertex, fragment, "simpleShader");
+
+    Rectangle t1(vertices_t1, sizeof(vertices_t1), indexes, sizeof(indexes), shader);
+    std::vector<Rectangle*> triangles = {&t1};
+
     GLuint texture;
     glGenTextures(1,&texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -136,8 +143,8 @@ int main(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load and generate the texture
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load("media/container.jpg", &width, &height, &nrChannels, 0);
+    int width, height;
+    unsigned char* data = SOIL_load_image("media/container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
     if(!data){
         glfwTerminate();
         std::cerr << "failed to load the texture" << std::endl;
@@ -145,18 +152,15 @@ int main(){
     }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
+    SOIL_free_image_data(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-    VertexShader vertex("src/shaders/textureExercise.vert");
-    FragmentShader fragment("src/shaders/textureExercise.frag");
-    ShaderProgram shader(vertex, fragment, "simpleShader");
 
-    Rectangle t1(vertices_t1, sizeof(vertices_t1), indexes, sizeof(indexes), texture, shader);
-    std::vector<Rectangle*> triangles = {&t1};
+
 
     glViewport(0, 0, 800, 600);
 
-    mainLoop(shader, window, triangles);
+    mainLoop(shader, window, triangles, texture);
 
     glfwTerminate();
     return 0;

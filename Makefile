@@ -4,7 +4,7 @@
 ########################################################################################
 CC = g++
 CFLAGS = -Wall -g
-LIBS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lGLEW -lGLU -lrt -lXxf86vm -lXinerama
+LIBS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lGLEW -lGLU -lrt -lXxf86vm -lXinerama -lSOIL
 
 ########################################################################################
 #   PROJECT DIRECTORIES
