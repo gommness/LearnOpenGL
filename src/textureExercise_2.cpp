@@ -154,14 +154,14 @@ int main(){
     };
 
     VertexShader vertex("src/shaders/textureExercise.vert");
-    FragmentShader fragment("src/shaders/textureExercise.frag");
+    FragmentShader fragment("src/shaders/textureReverse.frag");
     ShaderProgram shader(vertex, fragment, "simpleShader");
 
     Rectangle t1(vertices_t1, sizeof(vertices_t1), indexes, sizeof(indexes), shader);
     std::vector<Rectangle*> triangles = {&t1};
 
     GLuint texture[2];
-    if((texture[0] = loadTexture("media/container.jpg", GL_TEXTURE0)) == 0){
+    if((texture[0] = loadTexture("media/sample.jpg", GL_TEXTURE0)) == 0){
         glfwTerminate();
         std::cerr << "failed to load the texture" << std::endl;
     }
