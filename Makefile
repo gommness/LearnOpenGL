@@ -20,7 +20,7 @@ LIBD = lib
 ########################################################################################
 #   CLASSES
 ########################################################################################
-_SHADERS_OBJ = shader.o vertexShader.o fragmentShader.o shaderProgram.o
+_SHADERS_OBJ = shader.o vertexShader.o fragmentShader.o shaderProgram.o texture.o
 
 ########################################################################################
 #   SHADERS EN OPENGL
@@ -28,6 +28,7 @@ _SHADERS_OBJ = shader.o vertexShader.o fragmentShader.o shaderProgram.o
 _SHADER_CODE  = myShader.vert myShader.frag uniformExercise.frag interpolationExercise.vert interpolationExercise.frag
 _SHADER_CODE += hOffset.vert upsideDown.vert positionalColor.vert positionalColor.frag textureExercise.vert
 _SHADER_CODE += textureExercise.frag textureReverse.frag textureSimple.vert textureSimple.frag
+
 SHADER_CODE = $(addprefix ${SHADERD}/,${_SHADER_CODE})
 
 ########################################################################################
@@ -82,11 +83,17 @@ TEXTURE_EXERCISE_3_OBJ = $(addprefix ${OBJD}/,${_TEXTURE_EXERCISE_3_OBJ})
 TEXTURE_EXERCISE_3_INCLUDE = 
 TEXTURE_EXERCISE_3_REQUISITES = ${TEXTURE_EXERCISE_3_OBJ} ${SHADER_CODE}
 
+TEXTURE_EXERCISE_4_TARGET = textureExercise_4
+_TEXTURE_EXERCISE_4_OBJ = textureExercise_4.o ${_SHADERS_OBJ}
+TEXTURE_EXERCISE_4_OBJ = $(addprefix ${OBJD}/,${_TEXTURE_EXERCISE_4_OBJ})
+TEXTURE_EXERCISE_4_INCLUDE = 
+TEXTURE_EXERCISE_4_REQUISITES = ${TEXTURE_EXERCISE_4_OBJ} ${SHADER_CODE}
+
 ########################################################################################
 #   TARGET OF PROJECTS TO COMPILE
 ########################################################################################
 ALL_TARGETS  = ${TRIANGLE_TARGET} ${RECTANGLE_TARGET} ${TRIFORCE_TARGET} ${SHADER_EXERCISE_1_TARGET} ${SHADER_EXERCISE_2_TARGET}
-ALL_TARGETS += ${TEXTURE_EXERCISE_1_TARGET} ${TEXTURE_EXERCISE_2_TARGET} ${TEXTURE_EXERCISE_3_TARGET}
+ALL_TARGETS += ${TEXTURE_EXERCISE_1_TARGET} ${TEXTURE_EXERCISE_2_TARGET} ${TEXTURE_EXERCISE_3_TARGET} ${TEXTURE_EXERCISE_4_TARGET}
 
 
 
@@ -125,6 +132,9 @@ ${TEXTURE_EXERCISE_2_TARGET}: ${TEXTURE_EXERCISE_2_REQUISITES}
 
 ${TEXTURE_EXERCISE_3_TARGET}: ${TEXTURE_EXERCISE_3_REQUISITES}
 	${CC} ${CFLAGS} -o ${BUILD}/$@ ${TEXTURE_EXERCISE_3_OBJ} ${LIBS}
+
+${TEXTURE_EXERCISE_4_TARGET}: ${TEXTURE_EXERCISE_4_REQUISITES}
+	${CC} ${CFLAGS} -o ${BUILD}/$@ ${TEXTURE_EXERCISE_4_OBJ} ${LIBS}
 
 ${BUILD}/%.o: ${SRCD}/%.cpp
 	${CC} ${CFLAGS} ${INCLUDES} -c $< -o $@

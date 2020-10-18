@@ -44,24 +44,32 @@ void ShaderProgram::use(){
     glUseProgram(shaderProgram);
 }
 
-GLint ShaderProgram::setUniform(const std::string & name, bool value){
+GLint ShaderProgram::setUniform(const std::string & name, const bool value){
     GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
     if(uniform != -1)
         glUniform1i(uniform, value);
     return uniform;
 }
 
-GLint ShaderProgram::setUniform(const std::string & name, int value){
+GLint ShaderProgram::setUniform(const std::string & name, const int value){
     GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
     if(uniform != -1)
         glUniform1i(uniform, value);
     return uniform;
 }
 
-GLint ShaderProgram::setUniform(const std::string & name, float value){
+GLint ShaderProgram::setUniform(const std::string & name, const float value){
     GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
     if(uniform != -1)
         glUniform1f(uniform, value);
     return uniform;
 }
 
+GLint ShaderProgram::setUniform(const std::string & name, const Texture & texture){
+    GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
+    if(uniform != -1){
+        texture.activate();
+        glUniform1i(uniform, texture.getTexUnit());
+    }
+    return uniform;
+}
