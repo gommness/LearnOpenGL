@@ -52,6 +52,13 @@ void Texture::setFlag(const int glTargetFlag, const int glFlag, const bool bind,
         this->unbind();
 }
 
+void Texture::setWrap(const Texture::WrapFlag flag, const Texture::WrapValue value, const bool bind, const bool unbind){
+    setFlag(flag, bind, bind, unbind);
+}
+void Texture::setFilter(const Texture::FilterFlag flag, const Texture::FilterValue value, const bool bind, const bool unbind){
+    setFlag(flag, bind, bind, unbind);
+}
+
 GLint Texture::getTexUnit() const {
     return this->texUnit;
 }

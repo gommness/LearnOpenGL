@@ -61,12 +61,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 void mainLoop(GLuint shaderProgram, GLFWwindow * window, std::vector<Rectangle*> & rectangles, GLuint texture){
+    float x = 0.5;
+    float y = 0.5;
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
+        
+        if(glfwGetKey(window, GLFW_KEY_LEFT) != GLFW_RELEASE)
+            x-=0.01;
+        if(glfwGetKey(window, GLFW_KEY_RIGHT) != GLFW_RELEASE)
+            x+=0.01;
+        if(glfwGetKey(window, GLFW_KEY_UP) != GLFW_RELEASE)
+            y-=0.01;
+        if(glfwGetKey(window, GLFW_KEY_DOWN) != GLFW_RELEASE)
+            y+=0.01;
+            
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         for(size_t i = 0; i < rectangles.size(); i++){
+            rectangles[i]->shader.setUniform("targetCoords", x, y);
             rectangles[i]->render();
         }
         glfwSwapBuffers(window);
@@ -126,7 +139,7 @@ int main(){
         1, 2, 3  // second triangle
     };
 
-    VertexShader vertex("src/shaders/textureSimple.vert");
+    VertexShader vertex("src/shaders/centralPixel.vert");
     FragmentShader fragment("src/shaders/textureSimple.frag");
     ShaderProgram shader(vertex, fragment, "simpleShader");
 
@@ -134,6 +147,8 @@ int main(){
     std::vector<Rectangle*> triangles = {&t1};
 
     Texture texture("media/sample.jpg", GL_TEXTURE0);
+    texture.setFlag(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    texture.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     shader.setUniform("tex0", texture);
 
     glViewport(0, 0, 800, 600);

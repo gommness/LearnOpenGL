@@ -18,5 +18,6 @@ public:
     GLint setUniform(const std::string & uniform, const int value);
     GLint setUniform(const std::string & uniform, const float value);
     GLint setUniform(const std::string & uniform, const Texture & value);
+    GLint setUniform(const std::string & uniform, const float v1, const float v2);
     operator GLuint() const;
 };

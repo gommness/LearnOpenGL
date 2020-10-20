@@ -73,3 +73,10 @@ GLint ShaderProgram::setUniform(const std::string & name, const Texture & textur
     }
     return uniform;
 }
+
+GLint ShaderProgram::setUniform(const std::string & name, const float v1, const float v2){
+    GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
+    if(uniform != -1)
+        glUniform2f(uniform, v1, v2);
+    return uniform;
+}
