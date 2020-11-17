@@ -18,6 +18,8 @@
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
 
+#define DBG(x) std::cout << "debug: "<< x << std::endl
+
 
 void printMatrix(glm::mat4 & mat){
     for(int i = 0; i < 4; i++)
@@ -54,13 +56,13 @@ void mainLoop(GLuint shaderProgram, GLuint & VAO, GLFWwindow * window, int nVert
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
 
-        model = glm::rotate(id, glm::radians((GLfloat)glfwGetTime()*5.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(id, glm::radians((GLfloat)glfwGetTime()*20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         t = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(model));
 
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, nVertices);
@@ -197,19 +199,24 @@ int main(){
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (GLvoid*)0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (GLvoid*)(3*sizeof(GLfloat)));
         glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
     glBindVertexArray(0);
+
+    glEnable(GL_DEPTH_TEST);
 
 
     GLuint texture;
-    if((texture = loadTexture("media/sample.jpg", GL_TEXTURE0)) == 0){
+    if((texture = loadTexture("media/diamonds.jpg", GL_TEXTURE0)) == 0){
         glfwTerminate();
         std::cerr << "failed to load the texture" << std::endl;
+        return 1;
     }
 
     glViewport(0, 0, 800, 600);
 
-    mainLoop(shader, VAO, window, sizeof(vertices)/3, texture);
+    mainLoop(shader, VAO, window, sizeof(vertices)/5, texture);
 
     glfwTerminate();
     return 0;
