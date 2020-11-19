@@ -18,8 +18,6 @@
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
 
-#define DBG(x) std::cout << "debug: "<< x << std::endl
-
 glm::vec3 cameraPos(0,0,3);
 glm::vec3 cameraFront(0,0,-1);
 glm::vec3 cameraUp(0,1,0);

@@ -19,8 +19,6 @@
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
 
-#define DBG(x) std::cout << "debug: "<< x << std::endl
-
 Camera camera;
 
 bool keys[1024];

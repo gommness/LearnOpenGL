@@ -33,7 +33,9 @@ class Texture {
         BORDER_CLAMP = GL_CLAMP_TO_BORDER
     };
 public:
+    Texture();
     Texture(const std::string filename, const GLint texUnit, const int soilFormat = SOIL_LOAD_AUTO);
+    void load(const std::string filename, const GLint texUnit, const int soilFormat = SOIL_LOAD_AUTO);
     void bind() const;
     void unbind() const;
     GLint activate() const;

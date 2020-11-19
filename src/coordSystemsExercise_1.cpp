@@ -18,8 +18,6 @@
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
 
-#define DBG(x) std::cout << "debug: "<< x << std::endl
-
 
 void printMatrix(glm::mat4 & mat){
     for(int i = 0; i < 4; i++)

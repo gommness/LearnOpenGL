@@ -44,6 +44,36 @@ void ShaderProgram::use(){
     glUseProgram(shaderProgram);
 }
 
+GLuint ShaderProgram::getUniform(const std::string & uniform){
+    return glGetUniformLocation(shaderProgram, uniform.c_str());
+}
+
+void ShaderProgram::setUniform(const GLuint & uniform, const bool value){
+    glUniform1i(uniform, value);
+}
+void ShaderProgram::setUniform(const GLuint & uniform, const int value){
+    glUniform1i(uniform, value);
+}
+void ShaderProgram::setUniform(const GLuint & uniform, const float value){
+    glUniform1f(uniform, value);
+}
+void ShaderProgram::setUniform(const GLuint & uniform, const Texture & value){
+    std::cerr << "AAAAAAA" << std::endl;
+    glUniform1i(uniform, value.getTexUnit());
+}
+void ShaderProgram::setUniform(const GLuint & uniform, const float v1, const float v2){
+    glUniform2f(uniform, v1, v2);
+}
+void ShaderProgram::setUniform(const GLuint & uniform, const float v1, const float v2, const float v3){
+    glUniform3f(uniform, v1, v2, v3);
+}
+void ShaderProgram::setUniform(const GLuint & uniform, const float v1, const float v2, const float v3, const float v4){
+    glUniform4f(uniform, v1, v2, v3, v4);
+}
+void ShaderProgram::setUniform(const GLuint & uniform, const glm::mat4 & value){
+    glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(value));
+}
+
 GLint ShaderProgram::setUniform(const std::string & name, const bool value){
     GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
     if(uniform != -1)
@@ -78,5 +108,26 @@ GLint ShaderProgram::setUniform(const std::string & name, const float v1, const 
     GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
     if(uniform != -1)
         glUniform2f(uniform, v1, v2);
+    return uniform;
+}
+
+GLint ShaderProgram::setUniform(const std::string & name, const float v1, const float v2, const float v3){
+    GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
+    if(uniform != -1)
+        glUniform3f(uniform, v1, v2, v3);
+    return uniform;
+}
+
+GLint ShaderProgram::setUniform(const std::string & name, const float v1, const float v2, const float v3, const float v4){
+    GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
+    if(uniform != -1)
+        glUniform4f(uniform, v1, v2, v3, v4);
+    return uniform;
+}
+
+GLint ShaderProgram::setUniform(const std::string & name, const glm::mat4 & value){
+    GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
+    if(uniform != -1)
+        glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(value));
     return uniform;
 }

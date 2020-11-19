@@ -1,6 +1,8 @@
 #include "../include/texture.h"
 
-Texture::Texture(const std::string filename, const GLint texUnit, const int soilFormat){
+Texture::Texture(){}
+
+void Texture::load(const std::string filename, const GLint texUnit, const int soilFormat){
     // load image data
     unsigned char* data = SOIL_load_image(filename.c_str(), &width, &height, &channels, soilFormat);
     if(!data)
@@ -26,6 +28,10 @@ Texture::Texture(const std::string filename, const GLint texUnit, const int soil
 
     // unbind GL_TEXTURE_2D
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+Texture::Texture(const std::string filename, const GLint texUnit, const int soilFormat){
+    this->load(filename, texUnit, soilFormat);
 }
 
 void Texture::bind() const {
