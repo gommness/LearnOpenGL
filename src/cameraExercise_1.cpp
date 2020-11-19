@@ -46,9 +46,11 @@ void mainLoop(GLuint shaderProgram, GLuint & VAO, GLFWwindow * window, int nVert
     };
 
     glm::mat4 model(1);
+    GLfloat radius = 10;
     glm::mat4 view(1);
     glm::mat4 proj(1);
     glm::mat4 id(1);
+
 
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     view = glm::translate(view, glm::vec3(0.0f,0.0f,-3.0f));
@@ -59,17 +61,19 @@ void mainLoop(GLuint shaderProgram, GLuint & VAO, GLFWwindow * window, int nVert
     glBindTexture(GL_TEXTURE_2D, texture);
     glUniform1i(glGetUniformLocation(shaderProgram, "tex0"), GL_TEXTURE0);
 
-    GLuint t = glGetUniformLocation(shaderProgram, "model");
-    glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(model));
-    t = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(view));
-    t = glGetUniformLocation(shaderProgram, "proj");
-    glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(proj));
+    GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
+    GLuint projectionUniform = glGetUniformLocation(shaderProgram, "proj");
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(proj));
+    GLuint viewUniform = glGetUniformLocation(shaderProgram, "view");
 
-    t = glGetUniformLocation(shaderProgram, "model");
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
 
+        GLfloat camX = sin(glfwGetTime())*radius;
+        GLfloat camY = cos(glfwGetTime())*radius;
+        view = glm::lookAt(glm::vec3(camX, 0.0f, camY), glm::vec3(0,0,0), glm::vec3(0,1,0));
+        glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -78,7 +82,7 @@ void mainLoop(GLuint shaderProgram, GLuint & VAO, GLFWwindow * window, int nVert
         for(unsigned int i = 0; i < sizeof(cubePositions)/sizeof(cubePositions[0]); i++){
             glm::mat4 localTranslation = glm::translate(id, cubePositions[i]);
             localTranslation = glm::rotate(localTranslation, glm::radians(20.0f*i+(GLfloat)glfwGetTime()*20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-            glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(localTranslation));
+            glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(localTranslation));
             glDrawArrays(GL_TRIANGLES, 0, nVertices);
         }
         glBindVertexArray(0);

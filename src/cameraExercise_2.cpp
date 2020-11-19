@@ -20,14 +20,67 @@
 
 #define DBG(x) std::cout << "debug: "<< x << std::endl
 
+glm::vec3 cameraPos(0,0,3);
+glm::vec3 cameraFront(0,0,-1);
+glm::vec3 cameraUp(0,1,0);
+
+bool keys[1024];
+
+GLfloat deltaTime = 0;
+GLfloat lastFrame = 0;
+
+GLfloat pitchRotation = 0;
+GLfloat yawRotation = 0;
+
 
 void printMatrix(glm::mat4 & mat){
     for(int i = 0; i < 4; i++)
         std::cout << "[0]["<<i<<"]: "<<mat[0][i] <<"[1]["<<i<<"]: "<< mat[1][i] <<"[2]["<<i<<"]: "<< mat[2][i] <<"[3]["<<i<<"]: "<< mat[3][i] << std::endl;
 }
 
+void processInput(){
+    GLfloat cameraSpeed = 5 * deltaTime;
+    if(keys[GLFW_KEY_W])
+        cameraPos += cameraSpeed * cameraFront;
+    if(keys[GLFW_KEY_S])
+        cameraPos -= cameraSpeed * cameraFront;
+    if(keys[GLFW_KEY_A])
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if(keys[GLFW_KEY_D])
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+void viewRotate(){
+    cameraFront.x = cos(glm::radians(pitchRotation)) * cos(glm::radians(yawRotation));
+    cameraFront.y = sin(glm::radians(pitchRotation));
+    cameraFront.z = cos(glm::radians(pitchRotation)) * sin(glm::radians(yawRotation));
+    cameraFront = glm::normalize(cameraFront);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos){
+    GLfloat sensitivity = 0.05f;
+    static GLfloat lastX = SCREEN_WIDTH/2;
+    static GLfloat lastY = SCREEN_HEIGHT/2;
+
+    yawRotation += sensitivity*(xpos - lastX);
+    pitchRotation += sensitivity*(lastY - ypos); // reversed because y coords go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    if(pitchRotation >= 89.0f)
+        pitchRotation = 89.0f;
+    if(pitchRotation <= -89.0f)
+        pitchRotation = -89.0f;
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode){
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if(action == GLFW_PRESS)
+        keys[key] = true;
+    else if(action == GLFW_RELEASE)
+        keys[key] = false;
+
+    if(action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
@@ -45,10 +98,12 @@ void mainLoop(GLuint shaderProgram, GLuint & VAO, GLFWwindow * window, int nVert
     glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
+
     glm::mat4 model(1);
     glm::mat4 view(1);
     glm::mat4 proj(1);
     glm::mat4 id(1);
+
 
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     view = glm::translate(view, glm::vec3(0.0f,0.0f,-3.0f));
@@ -59,17 +114,22 @@ void mainLoop(GLuint shaderProgram, GLuint & VAO, GLFWwindow * window, int nVert
     glBindTexture(GL_TEXTURE_2D, texture);
     glUniform1i(glGetUniformLocation(shaderProgram, "tex0"), GL_TEXTURE0);
 
-    GLuint t = glGetUniformLocation(shaderProgram, "model");
-    glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(model));
-    t = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(view));
-    t = glGetUniformLocation(shaderProgram, "proj");
-    glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(proj));
+    GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
+    GLuint projectionUniform = glGetUniformLocation(shaderProgram, "proj");
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(proj));
+    GLuint viewUniform = glGetUniformLocation(shaderProgram, "view");
 
-    t = glGetUniformLocation(shaderProgram, "model");
     while(!glfwWindowShouldClose(window)){
+        GLfloat currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
         glfwPollEvents();
+        processInput();
+        viewRotate();
 
+        view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
+        glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -78,7 +138,7 @@ void mainLoop(GLuint shaderProgram, GLuint & VAO, GLFWwindow * window, int nVert
         for(unsigned int i = 0; i < sizeof(cubePositions)/sizeof(cubePositions[0]); i++){
             glm::mat4 localTranslation = glm::translate(id, cubePositions[i]);
             localTranslation = glm::rotate(localTranslation, glm::radians(20.0f*i+(GLfloat)glfwGetTime()*20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-            glUniformMatrix4fv(t, 1, GL_FALSE, glm::value_ptr(localTranslation));
+            glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(localTranslation));
             glDrawArrays(GL_TRIANGLES, 0, nVertices);
         }
         glBindVertexArray(0);
@@ -103,7 +163,10 @@ GLFWwindow * windowInit(){
         return nullptr;
     }
     glfwMakeContextCurrent(window);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // hide the cursor
+
     glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
     return window;
 }
 
