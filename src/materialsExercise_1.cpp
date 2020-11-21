@@ -27,7 +27,6 @@ bool keys[1024];
 GLfloat deltaTime = 0;
 GLfloat lastFrame = 0;
 
-glm::vec4 lightPos(-1, -1, 6, 1);
 
 void processInput(){
     if(keys[GLFW_KEY_W])
@@ -194,6 +193,10 @@ int main(){
     glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
+    glm::vec4 lightPos(-1, -1, 6, 1);
+    glm::vec3 lightColor(1);
+    glm::vec3 diffuseColor(1);
+    glm::vec3 ambientColor(1);
     glm::mat4 id(1);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), SCREEN_WIDTH/SCREEN_HEIGHT, 0.1f, 100.0f); 
 
@@ -207,24 +210,28 @@ int main(){
     }
 
     VertexShader vertex("src/shaders/lighting_1.vert");
-    FragmentShader fragment("src/shaders/lighting_1.frag");
-    ShaderProgram shader(vertex, fragment, "simpleShader");
+    FragmentShader fragment("src/shaders/material.frag");
+    ShaderProgram shader(vertex, fragment, "materialShader");
 
+    shader.use();
     GLuint objModelUniform = shader.getUniform("model");
     GLuint objViewUniform = shader.getUniform("view");
     GLuint objProjUniform = shader.getUniform("proj");
-    GLuint objLightColorUniform = shader.getUniform("lightColor");
-    GLuint objColorUniform = shader.getUniform("objColor");
     GLuint objLightPosUniform = shader.getUniform("lightPos");
     GLuint objViewPosUniform = shader.getUniform("viewPos");
-    //GLuint objTextureUniform = shader.getUniform("tex0");
+    GLuint objLightAmbientColor = shader.getUniform("light.ambient");
+    GLuint objLightDiffuseColor = shader.getUniform("light.diffuse");
 
-    shader.use();
+    shader.setUniform("material.ambient", 1, 0.5f, 0.31f);
+    shader.setUniform("material.diffuse", 1, 0.5f, 0.31f);
+    shader.setUniform("material.specular", 0.5f, 0.5f, 0.5f);
+    shader.setUniform("material.shininess", 32.0f);
+    shader.setUniform(objLightAmbientColor, 0.2f, 0.2f, 0.2f);
+    shader.setUniform(objLightDiffuseColor, 0.5f, 0.5f, 0.5f);
+    shader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
     // model will be set later
     // view will be set later
     shader.setUniform(objProjUniform , proj);
-    shader.setUniform(objLightColorUniform, 1, 1, 1);
-    shader.setUniform(objColorUniform, 1, 0.5f, 0.31f);
     //texture.activate();
     //shader.setUniform(objTextureUniform, texture);
 
@@ -252,6 +259,7 @@ int main(){
     GLuint lampModelUniform = lampShader.getUniform("model");
     GLuint lampViewUniform = lampShader.getUniform("view");
     GLuint lampProjUniform = lampShader.getUniform("proj");
+    GLuint lampLightColor = lampShader.getUniform("lightColor");
 
     lampShader.use();
     // model will be set later
@@ -278,9 +286,16 @@ int main(){
     glm::mat4 simpleRotation = glm::rotate(id, glm::radians(1.0f), glm::vec3(1, 1, 0.0f));
     while(!glfwWindowShouldClose(window)){
         GLfloat currentFrame = glfwGetTime();
-        timedRotation = glm::rotate(id, glm::radians((GLfloat)glfwGetTime()*20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        timedRotation = glm::rotate(id, glm::radians((GLfloat)currentFrame*20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        lightColor.x = sin(currentFrame*2.0f);
+        lightColor.y = sin(currentFrame*0.7f);
+        lightColor.z = sin(currentFrame*1.3f);
+        diffuseColor = lightColor * 0.5f;
+        ambientColor = diffuseColor * 0.2f;
+
         glfwPollEvents();
         processInput();
 
@@ -295,6 +310,8 @@ int main(){
         shader.setUniform(objViewUniform, camera.getViewMatrix());
         shader.setUniform(objViewPosUniform, camera.position.x, camera.position.y, camera.position.z);
         shader.setUniform(objLightPosUniform, lightPos.x, lightPos.y, lightPos.z);
+        shader.setUniform(objLightAmbientColor, ambientColor.x, ambientColor.y, ambientColor.z);
+        shader.setUniform(objLightDiffuseColor, diffuseColor.x, diffuseColor.y, diffuseColor.z);
         // draw cubes
         glBindVertexArray(VAO);
         for(unsigned int i = 0; i < sizeof(cubePositions)/sizeof(cubePositions[0]); i++){
@@ -314,6 +331,7 @@ int main(){
             lampShader.use();
             lampShader.setUniform(lampViewUniform, camera.getViewMatrix());
             lampShader.setUniform(lampModelUniform, localTranslation);
+            lampShader.setUniform(lampLightColor, lightColor.x, lightColor.y, lightColor.z);
             glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/5);
         }
         glBindVertexArray(0);

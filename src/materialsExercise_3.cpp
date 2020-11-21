@@ -27,7 +27,6 @@ bool keys[1024];
 GLfloat deltaTime = 0;
 GLfloat lastFrame = 0;
 
-glm::vec4 lightPos(-1, -1, 6, 1);
 
 void processInput(){
     if(keys[GLFW_KEY_W])
@@ -105,81 +104,53 @@ GLFWwindow* init(){
     return window;
 }
 
-GLuint loadTexture(const std::string & texName, unsigned int texUnit){
-    GLuint texture;
-    glGenTextures(1,&texture);
-    glActiveTexture(texUnit);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    // texture wrapping options
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load and generate the texture
-    int width, height;
-    unsigned char* data = SOIL_load_image(texName.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
-    if(!data)
-        return 0;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(data);
-    //glBindTexture(GL_TEXTURE_2D, 0);
-    return texture;
-}
-
 int main(){
 
     GLFWwindow * window = init();
     if(!window) return 1;
 
     float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
 
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f, 0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f, 0.0f, 0.0f,
 
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
 
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f
     };
 
     glm::vec3 cubePositions[] = {
@@ -194,39 +165,58 @@ int main(){
     glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
+    //glm::vec4 lightPos(-1, -1, 6, 1);
+    glm::vec4 lightPos(-1, -1,-1, 1);
+    glm::vec3 lightColor(1);
+    glm::vec3 diffuseColor(1);
+    glm::vec3 ambientColor(1);
     glm::mat4 id(1);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), SCREEN_WIDTH/SCREEN_HEIGHT, 0.1f, 100.0f); 
 
     Texture texture;
     try {
-        texture.load("media/questionBlock.jpg", GL_TEXTURE0);
+        texture.load("media/container2.jpg", GL_TEXTURE0);
     } catch (std::runtime_error) {
         glfwTerminate();
         std::cerr << "failed to load the texture" << std::endl;
         return 1;
     }
+    texture.setFlag(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    texture.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    VertexShader vertex("src/shaders/lighting_1.vert");
-    FragmentShader fragment("src/shaders/lighting_1.frag");
-    ShaderProgram shader(vertex, fragment, "simpleShader");
+    Texture specularMap;
+    try {
+        specularMap.load("media/container2_specular2.png", GL_TEXTURE1);
+    } catch (std::runtime_error) {
+        glfwTerminate();
+        std::cerr << "failed to load the specularMap" << std::endl;
+        return 1;
+    }
+    specularMap.setFlag(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    specularMap.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    VertexShader vertex("src/shaders/specularMap.vert");
+    FragmentShader fragment("src/shaders/specularMap.frag");
+    ShaderProgram shader(vertex, fragment, "materialShader");
+
+    shader.use();
     GLuint objModelUniform = shader.getUniform("model");
     GLuint objViewUniform = shader.getUniform("view");
     GLuint objProjUniform = shader.getUniform("proj");
-    GLuint objLightColorUniform = shader.getUniform("lightColor");
-    GLuint objColorUniform = shader.getUniform("objColor");
     GLuint objLightPosUniform = shader.getUniform("lightPos");
     GLuint objViewPosUniform = shader.getUniform("viewPos");
-    //GLuint objTextureUniform = shader.getUniform("tex0");
+    GLuint objLightAmbientColor = shader.getUniform("light.ambient");
+    GLuint objLightDiffuseColor = shader.getUniform("light.diffuse");
 
-    shader.use();
+    shader.setUniform("material.specular", specularMap);
+    shader.setUniform("material.diffuse", texture);
+    shader.setUniform("material.shininess", 32.0f);
+    shader.setUniform(objLightAmbientColor, 0.2f, 0.2f, 0.2f);
+    shader.setUniform(objLightDiffuseColor, 0.5f, 0.5f, 0.5f);
+    shader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
     // model will be set later
     // view will be set later
     shader.setUniform(objProjUniform , proj);
-    shader.setUniform(objLightColorUniform, 1, 1, 1);
-    shader.setUniform(objColorUniform, 1, 0.5f, 0.31f);
-    //texture.activate();
-    //shader.setUniform(objTextureUniform, texture);
 
     GLuint VBO;
     GLuint VAO;
@@ -237,10 +227,12 @@ int main(){
     glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (GLvoid*)0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (GLvoid*)(3*sizeof(GLfloat)));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (GLvoid*)0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (GLvoid*)(3*sizeof(GLfloat)));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (GLvoid*)(6*sizeof(GLfloat)));
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 
 
@@ -252,6 +244,7 @@ int main(){
     GLuint lampModelUniform = lampShader.getUniform("model");
     GLuint lampViewUniform = lampShader.getUniform("view");
     GLuint lampProjUniform = lampShader.getUniform("proj");
+    GLuint lampLightColor = lampShader.getUniform("lightColor");
 
     lampShader.use();
     // model will be set later
@@ -263,7 +256,7 @@ int main(){
     glBindVertexArray(lightVAO);
     // VBO already contains the correct data
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
@@ -275,12 +268,21 @@ int main(){
 
     // DRAWING
     glm::mat4 timedRotation(1);
-    glm::mat4 simpleRotation = glm::rotate(id, glm::radians(1.0f), glm::vec3(1, 1, 0.0f));
+    //glm::mat4 simpleRotation = glm::rotate(id, glm::radians(1.0f), glm::vec3(1, 1, 0.0f));
     while(!glfwWindowShouldClose(window)){
         GLfloat currentFrame = glfwGetTime();
-        timedRotation = glm::rotate(id, glm::radians((GLfloat)glfwGetTime()*20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        timedRotation = glm::rotate(id, glm::radians((GLfloat)currentFrame*20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        /*
+        lightColor.x = sin(currentFrame*2.0f);
+        lightColor.y = sin(currentFrame*0.7f);
+        lightColor.z = sin(currentFrame*1.3f);
+        diffuseColor = lightColor * 0.5f;
+        ambientColor = diffuseColor * 0.2f;
+        */
+
         glfwPollEvents();
         processInput();
 
@@ -295,6 +297,8 @@ int main(){
         shader.setUniform(objViewUniform, camera.getViewMatrix());
         shader.setUniform(objViewPosUniform, camera.position.x, camera.position.y, camera.position.z);
         shader.setUniform(objLightPosUniform, lightPos.x, lightPos.y, lightPos.z);
+        //shader.setUniform(objLightAmbientColor, ambientColor.x, ambientColor.y, ambientColor.z);
+        //shader.setUniform(objLightDiffuseColor, diffuseColor.x, diffuseColor.y, diffuseColor.z);
         // draw cubes
         glBindVertexArray(VAO);
         for(unsigned int i = 0; i < sizeof(cubePositions)/sizeof(cubePositions[0]); i++){
@@ -314,11 +318,13 @@ int main(){
             lampShader.use();
             lampShader.setUniform(lampViewUniform, camera.getViewMatrix());
             lampShader.setUniform(lampModelUniform, localTranslation);
+            //lampShader.setUniform(lampModelUniform, glm::mat4(1));
+            lampShader.setUniform(lampLightColor, lightColor.x, lightColor.y, lightColor.z);
             glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/5);
         }
         glBindVertexArray(0);
 
-        lightPos = simpleRotation*lightPos;
+        //lightPos = simpleRotation*lightPos;
         glfwSwapBuffers(window);
     }
 

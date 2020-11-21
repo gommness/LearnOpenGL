@@ -2,10 +2,10 @@
 
 out vec4 color;
 
-uniform sampler2D tex0;
+uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
 
 void main()
 {
-    color = vec4(1.0f);
+    color = vec4(lightColor, 1.0f);
 }
 

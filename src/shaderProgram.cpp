@@ -99,7 +99,7 @@ GLint ShaderProgram::setUniform(const std::string & name, const Texture & textur
     GLint uniform = glGetUniformLocation(shaderProgram, name.c_str());
     if(uniform != -1){
         texture.activate();
-        glUniform1i(uniform, texture.getTexUnit());
+        glUniform1i(uniform, texture.getTexUnit() - GL_TEXTURE0);
     }
     return uniform;
 }
