@@ -37,6 +37,10 @@ void processInput(){
        camera.translate(Camera::Movement::LEFT, deltaTime);
     if(keys[GLFW_KEY_D])
        camera.translate(Camera::Movement::RIGHT, deltaTime);
+    if(keys[GLFW_KEY_SPACE])
+       camera.translate(Camera::Movement::UP, deltaTime);
+    if(keys[GLFW_KEY_LEFT_SHIFT])
+       camera.translate(Camera::Movement::DOWN, deltaTime);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
@@ -196,7 +200,7 @@ int main(){
     specularMap.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     VertexShader vertex("src/shaders/specularMap.vert");
-    FragmentShader fragment("src/shaders/specularMap.frag");
+    FragmentShader fragment("src/shaders/pointAttenuationLight.frag");
     ShaderProgram shader(vertex, fragment, "materialShader");
 
     shader.use();
@@ -211,9 +215,13 @@ int main(){
     shader.setUniform("material.specular", specularMap);
     shader.setUniform("material.diffuse", texture);
     shader.setUniform("material.shininess", 32.0f);
+    shader.setUniform("light.constant", 1.0f);
+    shader.setUniform("light.linear", 0.09f);
+    shader.setUniform("light.quadratic", 0.032f);
     shader.setUniform(objLightAmbientColor, 0.2f, 0.2f, 0.2f);
     shader.setUniform(objLightDiffuseColor, 0.5f, 0.5f, 0.5f);
     shader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
+    shader.setUniform("light.direction", -0.2f, -1.0f, -0.3f);
     // model will be set later
     // view will be set later
     shader.setUniform(objProjUniform , proj);

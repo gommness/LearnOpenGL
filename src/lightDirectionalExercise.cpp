@@ -196,14 +196,14 @@ int main(){
     specularMap.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     VertexShader vertex("src/shaders/specularMap.vert");
-    FragmentShader fragment("src/shaders/specularMap.frag");
+    FragmentShader fragment("src/shaders/directionalLight.frag");
     ShaderProgram shader(vertex, fragment, "materialShader");
 
     shader.use();
     GLuint objModelUniform = shader.getUniform("model");
     GLuint objViewUniform = shader.getUniform("view");
     GLuint objProjUniform = shader.getUniform("proj");
-    GLuint objLightPosUniform = shader.getUniform("light.position");
+    GLuint objLightPosUniform = shader.getUniform("lightPos");
     GLuint objViewPosUniform = shader.getUniform("viewPos");
     GLuint objLightAmbientColor = shader.getUniform("light.ambient");
     GLuint objLightDiffuseColor = shader.getUniform("light.diffuse");
@@ -214,6 +214,7 @@ int main(){
     shader.setUniform(objLightAmbientColor, 0.2f, 0.2f, 0.2f);
     shader.setUniform(objLightDiffuseColor, 0.5f, 0.5f, 0.5f);
     shader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
+    shader.setUniform("light.direction", -0.2f, -1.0f, -0.3f);
     // model will be set later
     // view will be set later
     shader.setUniform(objProjUniform , proj);

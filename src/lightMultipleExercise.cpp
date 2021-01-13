@@ -37,6 +37,10 @@ void processInput(){
        camera.translate(Camera::Movement::LEFT, deltaTime);
     if(keys[GLFW_KEY_D])
        camera.translate(Camera::Movement::RIGHT, deltaTime);
+    if(keys[GLFW_KEY_SPACE])
+       camera.translate(Camera::Movement::UP, deltaTime);
+    if(keys[GLFW_KEY_LEFT_SHIFT])
+       camera.translate(Camera::Movement::DOWN, deltaTime);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
@@ -154,20 +158,26 @@ int main(){
     };
 
     glm::vec3 cubePositions[] = {
-    glm::vec3( 2.0f, 5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),
-    glm::vec3( 2.4f, -0.4f, -3.5f),
-    glm::vec3(-1.7f, 3.0f, -7.5f),
-    glm::vec3( 1.3f, -2.0f, -2.5f),
-    glm::vec3( 1.5f, 2.0f, -2.5f),
-    glm::vec3( 1.5f, 0.2f, -1.5f),
-    glm::vec3(-1.3f, 1.0f, -1.5f)
+        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f, 2.0f, -2.5f),
+        glm::vec3( 1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
-    //glm::vec4 lightPos(-1, -1, 6, 1);
-    glm::vec4 lightPos(-1, -1,-1, 1);
-    glm::vec3 lightColor(1);
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3( 0.7f, 0.2f, 2.0f),
+        glm::vec3( 2.3f,-3.3f,-4.0f),
+        glm::vec3(-4.0f, 2.0f,-12.0f),
+        glm::vec3( 0.0f, 0.0f,-3.0f)
+    };
+    unsigned int nPointLightPositions = sizeof(pointLightPositions)/sizeof(glm::vec3);
+
+    glm::vec3 lightColor(1.0f, 1.0f, 0.8f);
     glm::vec3 diffuseColor(1);
     glm::vec3 ambientColor(1);
     glm::mat4 id(1);
@@ -196,24 +206,38 @@ int main(){
     specularMap.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     VertexShader vertex("src/shaders/specularMap.vert");
-    FragmentShader fragment("src/shaders/specularMap.frag");
+    FragmentShader fragment("src/shaders/multiLight.frag");
     ShaderProgram shader(vertex, fragment, "materialShader");
 
     shader.use();
     GLuint objModelUniform = shader.getUniform("model");
     GLuint objViewUniform = shader.getUniform("view");
     GLuint objProjUniform = shader.getUniform("proj");
-    GLuint objLightPosUniform = shader.getUniform("light.position");
     GLuint objViewPosUniform = shader.getUniform("viewPos");
-    GLuint objLightAmbientColor = shader.getUniform("light.ambient");
-    GLuint objLightDiffuseColor = shader.getUniform("light.diffuse");
-
     shader.setUniform("material.specular", specularMap);
     shader.setUniform("material.diffuse", texture);
     shader.setUniform("material.shininess", 32.0f);
-    shader.setUniform(objLightAmbientColor, 0.2f, 0.2f, 0.2f);
-    shader.setUniform(objLightDiffuseColor, 0.5f, 0.5f, 0.5f);
-    shader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
+
+    // point light uniforms
+    GLuint objLightPosUniform[4];
+    std::string iteratorStr;
+    std::string uniformName = "pointLight[";
+    for(unsigned int i=0; i<nPointLightPositions; i++){
+        iteratorStr = std::to_string(i);
+        objLightPosUniform[i] = shader.getUniform(std::string(uniformName).append(iteratorStr).append("].position"));
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].constant"), 1.0f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].linear"), 0.09f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].quadratic"), 0.032f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].ambient"), 0.02f, 0.02f, 0.0f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].diffuse"), 0.5f, 0.5f, 0.3f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].specular"), 1.0f, 1.0f, 0.8f);
+    }
+
+    shader.setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
+    shader.setUniform("dirLight.ambient", 0.02f, 0.02f, 0.0f);
+    shader.setUniform("dirLight.diffuse", 0.5f, 0.5f, 0.1f);
+    shader.setUniform("dirLight.specular", 0.6f, 0.6f, 0.4f);
+
     // model will be set later
     // view will be set later
     shader.setUniform(objProjUniform , proj);
@@ -290,15 +314,15 @@ int main(){
         // debug::printVector3(camera.front, "camera front: ");
         // debug::printMatrix(camera.getViewMatrix(), "viewMatrix");
 
-        glClearColor(0, 0.02f, 0.05f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.01f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
         shader.setUniform(objViewUniform, camera.getViewMatrix());
         shader.setUniform(objViewPosUniform, camera.position.x, camera.position.y, camera.position.z);
-        shader.setUniform(objLightPosUniform, lightPos.x, lightPos.y, lightPos.z);
-        //shader.setUniform(objLightAmbientColor, ambientColor.x, ambientColor.y, ambientColor.z);
-        //shader.setUniform(objLightDiffuseColor, diffuseColor.x, diffuseColor.y, diffuseColor.z);
+        for(unsigned int i=0; i<nPointLightPositions; i++){
+            shader.setUniform(objLightPosUniform[i], pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
+        }
         // draw cubes
         glBindVertexArray(VAO);
         for(unsigned int i = 0; i < sizeof(cubePositions)/sizeof(cubePositions[0]); i++){
@@ -311,8 +335,8 @@ int main(){
         }
         // draw lamp
         glBindVertexArray(lightVAO);
-        {
-            glm::mat4 localTranslation = glm::translate(id, glm::vec3(lightPos));
+        for(unsigned int i=0; i<nPointLightPositions; i++){
+            glm::mat4 localTranslation = glm::translate(id, pointLightPositions[i]);
             localTranslation = glm::scale(localTranslation, glm::vec3(0.2f));
             //localTranslation = timedRotation * localTranslation;
             lampShader.use();
@@ -331,4 +355,3 @@ int main(){
     glfwTerminate();
     return 0;
 }
-

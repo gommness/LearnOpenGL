@@ -37,6 +37,10 @@ void processInput(){
        camera.translate(Camera::Movement::LEFT, deltaTime);
     if(keys[GLFW_KEY_D])
        camera.translate(Camera::Movement::RIGHT, deltaTime);
+    if(keys[GLFW_KEY_SPACE])
+       camera.translate(Camera::Movement::UP, deltaTime);
+    if(keys[GLFW_KEY_LEFT_SHIFT])
+       camera.translate(Camera::Movement::DOWN, deltaTime);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
@@ -196,24 +200,28 @@ int main(){
     specularMap.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     VertexShader vertex("src/shaders/specularMap.vert");
-    FragmentShader fragment("src/shaders/specularMap.frag");
+    FragmentShader fragment("src/shaders/flashLight.frag");
     ShaderProgram shader(vertex, fragment, "materialShader");
 
     shader.use();
     GLuint objModelUniform = shader.getUniform("model");
     GLuint objViewUniform = shader.getUniform("view");
     GLuint objProjUniform = shader.getUniform("proj");
-    GLuint objLightPosUniform = shader.getUniform("light.position");
     GLuint objViewPosUniform = shader.getUniform("viewPos");
     GLuint objLightAmbientColor = shader.getUniform("light.ambient");
     GLuint objLightDiffuseColor = shader.getUniform("light.diffuse");
+    GLuint objLightPosUniform = shader.getUniform("light.position");
+    GLuint objLightDirectionUniform = shader.getUniform("light.direction");
 
     shader.setUniform("material.specular", specularMap);
     shader.setUniform("material.diffuse", texture);
     shader.setUniform("material.shininess", 32.0f);
+    shader.setUniform("light.cutOff", glm::cos(glm::radians(12.5f)));
+    shader.setUniform("light.outerCutOff", glm::cos(glm::radians(17.5f)));
     shader.setUniform(objLightAmbientColor, 0.2f, 0.2f, 0.2f);
     shader.setUniform(objLightDiffuseColor, 0.5f, 0.5f, 0.5f);
     shader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
+    shader.setUniform("light.direction", -0.2f, -1.0f, -0.3f);
     // model will be set later
     // view will be set later
     shader.setUniform(objProjUniform , proj);
@@ -290,13 +298,14 @@ int main(){
         // debug::printVector3(camera.front, "camera front: ");
         // debug::printMatrix(camera.getViewMatrix(), "viewMatrix");
 
-        glClearColor(0, 0.02f, 0.05f, 1.0f);
+        glClearColor(0.02f, 0.06f, 0.02f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
         shader.setUniform(objViewUniform, camera.getViewMatrix());
         shader.setUniform(objViewPosUniform, camera.position.x, camera.position.y, camera.position.z);
-        shader.setUniform(objLightPosUniform, lightPos.x, lightPos.y, lightPos.z);
+        shader.setUniform(objLightPosUniform, camera.position.x, camera.position.y, camera.position.z);
+        shader.setUniform(objLightDirectionUniform, camera.front.x, camera.front.y, camera.front.z);
         //shader.setUniform(objLightAmbientColor, ambientColor.x, ambientColor.y, ambientColor.z);
         //shader.setUniform(objLightDiffuseColor, diffuseColor.x, diffuseColor.y, diffuseColor.z);
         // draw cubes
