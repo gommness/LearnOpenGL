@@ -12,10 +12,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../include/utils.h"
-#include "../include/shaderProgram.h"
-#include "../include/texture.h"
-#include "../include/camera.h"
+#include "utils.h"
+#include "shaderProgram.h"
+#include "texture.h"
+#include "camera.h"
+#include "image.h"
 
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
@@ -199,7 +200,8 @@ int main(){
 
     Texture texture;
     try {
-        texture.load("media/questionBlock.jpg", GL_TEXTURE0);
+        Image image{"media/questionBlock.jpg"};
+        texture.load(image, GL_TEXTURE0);
     } catch (std::runtime_error) {
         glfwTerminate();
         std::cerr << "failed to load the texture" << std::endl;

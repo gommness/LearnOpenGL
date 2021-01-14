@@ -1,26 +1,29 @@
-
-########################################################################################
-#   COMPILER
-########################################################################################
-CC = g++
-CFLAGS = -Wall -g
-LIBS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lGLEW -lGLU -lrt -lXxf86vm -lXinerama -lSOIL
-
 ########################################################################################
 #   PROJECT DIRECTORIES
 ########################################################################################
 SRCD = src
+INCLUDED = include
 SHADERD = ${SRCD}/shaders
 BUILD = build
 OBJD = build
 LIBD = lib
 
+########################################################################################
+#   COMPILER
+########################################################################################
+ifdef dev
+	CC = python ~/.vim/bin/cc_args.py g++
+else
+	CC = g++
+endif
 
+CFLAGS = -Wall -g -I ${INCLUDED}
+LIBS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lGLEW -lGLU -lrt -lXxf86vm -lXinerama -lSOIL
 
 ########################################################################################
 #   CLASSES
 ########################################################################################
-_SHADERS_OBJ = shader.o vertexShader.o fragmentShader.o shaderProgram.o texture.o
+_SHADERS_OBJ = shader.o vertexShader.o fragmentShader.o shaderProgram.o texture.o image.o textureSampler.o
 _GAMEOBJECTS_OBJ = camera.o
 _DEBUG_OBJ = debugTools.o
 

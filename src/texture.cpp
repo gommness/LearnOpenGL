@@ -2,12 +2,7 @@
 
 Texture::Texture(){}
 
-void Texture::load(const std::string filename, const GLint texUnit, const int soilFormat){
-    // load image data
-    unsigned char* data = SOIL_load_image(filename.c_str(), &width, &height, &channels, soilFormat);
-    if(!data)
-        throw TextureError("cannot load image: "+filename);
-
+void Texture::load(Image & image, const GLint texUnit){
     this->texUnit = texUnit;
     // generate texture instance
     glGenTextures(1,&textureId);
@@ -21,17 +16,21 @@ void Texture::load(const std::string filename, const GLint texUnit, const int so
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // bind texture instance with data, and generate mipmaps
-    GLint format = Texture::glFormat(channels);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    GLint format = Texture::glFormat(image.getChannels());
+    glTexImage2D(GL_TEXTURE_2D, 0, format, image.getWidth(), image.getHeight(), 0, format, GL_UNSIGNED_BYTE, image.getData());
     glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(data);
 
     // unbind GL_TEXTURE_2D
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+Texture::Texture(Image& image, const GLint texUnit){
+    this->load(image, texUnit);
+}
+
 Texture::Texture(const std::string filename, const GLint texUnit, const int soilFormat){
-    this->load(filename, texUnit, soilFormat);
+    Image image(filename, soilFormat);
+    this->load(image, texUnit);
 }
 
 void Texture::bind() const {

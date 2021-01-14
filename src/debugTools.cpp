@@ -1,4 +1,4 @@
-#include "../include/debugTools.h"
+#include "debugTools.h"
 
 void debug::printMatrix(glm::mat4 mat, std::string pre){
     for(int i = 0; i < 4; i++)

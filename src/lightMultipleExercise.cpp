@@ -12,10 +12,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../include/utils.h"
-#include "../include/shaderProgram.h"
-#include "../include/texture.h"
-#include "../include/camera.h"
+#include "utils.h"
+#include "shaderProgram.h"
+#include "texture.h"
+#include "camera.h"
 
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
@@ -185,7 +185,8 @@ int main(){
 
     Texture texture;
     try {
-        texture.load("media/container2.jpg", GL_TEXTURE0);
+        Image image{"media/container2.jpg"};
+        texture.load(image, GL_TEXTURE0);
     } catch (std::runtime_error) {
         glfwTerminate();
         std::cerr << "failed to load the texture" << std::endl;
@@ -196,7 +197,8 @@ int main(){
 
     Texture specularMap;
     try {
-        specularMap.load("media/container2_specular2.png", GL_TEXTURE1);
+        Image image{"media/container2_specular2.png"};
+        specularMap.load(image, GL_TEXTURE1);
     } catch (std::runtime_error) {
         glfwTerminate();
         std::cerr << "failed to load the specularMap" << std::endl;

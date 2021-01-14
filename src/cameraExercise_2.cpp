@@ -12,8 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../include/utils.h"
-#include "../include/shaderProgram.h"
+#include "utils.h"
+#include "shaderProgram.h"
 
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
