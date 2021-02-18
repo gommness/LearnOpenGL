@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, vector<TextureSampler> & textures) :
+Mesh::Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler> & textures) :
     vertices(vertices), indexes(indexes), textures(textures)
 {
     setUp();
@@ -11,11 +11,28 @@ void Mesh::draw(ShaderProgram shader){
         shader.setUniform(textures[i]);
         textures[i].bind();
     }
+    // reset tex units
     glActiveTexture(GL_TEXTURE0);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indexes.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+std::string vertexToString(const Vertex & v){
+    std::stringstream ss;
+    ss << "position: "<< v.position.x<<", "<<v.position.y<<", "<<v.position.z<<". ";
+    ss << "normal: "<< v.normal.x<<", "<<v.normal.y<<", "<<v.normal.z<<". ";
+    ss << "texCoords: "<< v.texCoords.x<<", "<<v.texCoords.y<<".";
+    return ss.str();
+}
+
+std::string Mesh::toString(){
+    std::stringstream ss;
+    for(unsigned int i=0; i<vertices.size(); ++i){
+        ss << vertexToString(vertices[i]) << "\n";
+    }
+    return ss.str();
 }
 
 void Mesh::setUp(){

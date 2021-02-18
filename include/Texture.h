@@ -33,7 +33,7 @@ class Texture {
     };
 public:
     Texture();
-    Texture(const std::string filename, const GLint texUnit, const int soilFormat = SOIL_LOAD_AUTO);
+    Texture(const std::string filename, const GLint texUnit = GL_TEXTURE0, const int soilFormat = SOIL_LOAD_AUTO);
     Texture(Image& image, const GLint texUnit);
     void load(Image & image, const GLint texUnit);
     void bind() const;

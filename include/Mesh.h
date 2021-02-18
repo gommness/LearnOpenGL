@@ -1,3 +1,6 @@
+#ifndef _MESH
+#define _MESH
+
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -19,11 +22,14 @@ class Mesh {
         std::vector<GLuint> indexes;
         std::vector<TextureSampler> textures;
 
-        Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, vector<TextureSampler> & textures);
+        Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler> & textures);
+        std::string toString();
         void draw(ShaderProgram shader);
 
     private:
         GLuint VAO, VBO, EBO;
 
         void setUp();
-}
+};
+
+#endif

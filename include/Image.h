@@ -2,6 +2,7 @@
 #ifndef _IMAGE
 #define _IMAGE
 
+#include <utility>
 #include <SOIL/SOIL.h>
 #include "Utils.h"
 
