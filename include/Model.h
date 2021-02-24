@@ -17,9 +17,10 @@ class Model{
         std::string directory;
 
         void loadModel(const std::string & path);
+        void preDraw(ShaderProgram & shader);
         void processNode(aiNode* node, const aiScene* scene);
         Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-        std::vector<TextureSampler> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+        std::vector<TextureSampler*> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 };
 
 #endif

@@ -5,6 +5,7 @@ Image::Image(const std::string & filename, const int soilFormat){
     data = SOIL_load_image(filename.c_str(), &width, &height, &channels, soilFormat);
     if(!data)
         throw Exception("cannot load image: "+filename);
+    this->filename = std::move(filename);
 }
 
 Image::Image(const Image & other){

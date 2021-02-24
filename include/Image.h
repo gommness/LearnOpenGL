@@ -15,10 +15,12 @@ class Image {
         int getWidth() const {return width;}
         int getHeight() const {return height;}
         int getChannels() const {return channels;}
-        unsigned char* getData() const {return data;}
+        const std::string& getFileName() {return filename;}
+        unsigned char* getData() {return data;}
 
     private:
         unsigned char* data = nullptr;
+        std::string filename;
         int width;
         int height;
         int channels;

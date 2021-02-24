@@ -32,7 +32,7 @@ public:
     GLint setUniform(const std::string & uniform, const int value);
     GLint setUniform(const std::string & uniform, const float value);
     GLint setUniform(const std::string & uniform, const Texture & value);
-    GLint setUniform(const TextureSampler & value);
+    GLint setUniform(TextureSampler & value);
     GLint setUniform(const std::string & uniform, const float v1, const float v2);
     GLint setUniform(const std::string & uniform, const float v1, const float v2, const float v3);
     GLint setUniform(const std::string & uniform, const float v1, const float v2, const float v3, const float v4);

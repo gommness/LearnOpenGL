@@ -20,9 +20,9 @@ class Mesh {
     public:
         std::vector<Vertex> vertices;
         std::vector<GLuint> indexes;
-        std::vector<TextureSampler> textures;
+        std::vector<TextureSampler*> textures;
 
-        Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler> & textures);
+        Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler*> & textures);
         std::string toString();
         void draw(ShaderProgram shader);
 

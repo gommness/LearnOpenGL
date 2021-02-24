@@ -4,6 +4,7 @@ Texture::Texture(){}
 
 void Texture::load(Image & image, const GLint texUnit){
     this->texUnit = texUnit;
+    this->filename = image.getFileName();
     // generate texture instance
     glGenTextures(1,&textureId);
     glActiveTexture(texUnit);

@@ -1,15 +1,32 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler> & textures) :
+Mesh::Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler*> & textures) :
     vertices(vertices), indexes(indexes), textures(textures)
 {
     setUp();
 }
 
 void Mesh::draw(ShaderProgram shader){
+    GLuint diffuseNr = 1;
+    GLuint specularNr = 1;
+
+    std::string uniformName;
     for(unsigned int i = 0; i < textures.size(); i++){
-        shader.setUniform(textures[i]);
-        textures[i].bind();
+        switch(textures[i]->getType()){
+            case aiTextureType_DIFFUSE:
+                uniformName = textures[i]->getUniformName()+std::to_string(diffuseNr);
+                diffuseNr++;
+                break;
+            case aiTextureType_SPECULAR:
+                uniformName = textures[i]->getUniformName()+std::to_string(specularNr);
+                specularNr++;
+                break;
+            default:
+                uniformName = textures[i]->getUniformName();
+                break;
+        }
+        shader.setUniform(uniformName,*(textures[i]));
+        textures[i]->bind();
     }
     // reset tex units
     glActiveTexture(GL_TEXTURE0);

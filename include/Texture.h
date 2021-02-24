@@ -42,6 +42,9 @@ public:
     void setFlag(const int glTargetFlag, const int glFlag, const bool bind=false, const bool unbind=false);
     void setWrap(const WrapFlag flag, const WrapValue value, const bool bind=false, const bool unbind=false);
     void setFilter(const FilterFlag flag, const FilterValue value, const bool bind=false, const bool unbind=false);
+    const std::string& getFileName() {return filename;}
+    void setFileName(const std::string& name) {filename = name;}
+    void setFileName(const std::string&& name) {filename = std::move(name);}
     GLint getTexUnit() const;
     operator GLuint() const;
 
@@ -50,6 +53,7 @@ private:
     static GLint glFormat(const int channels);
 
     int forceChannels;
+    std::string filename;
     GLint texUnit;
     GLuint textureId;
 

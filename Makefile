@@ -17,7 +17,7 @@ else
 	CC = g++
 endif
 
-CFLAGS = -Wall -g -I ${INCLUDED}
+CFLAGS = -Wall -g -std=c++17 -I ${INCLUDED}
 LIBS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lGLEW -lGLU -lrt -lXxf86vm -lXinerama -lSOIL -lassimp
 
 ########################################################################################

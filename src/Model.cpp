@@ -11,6 +11,10 @@ Model::Model(GLchar* path){
     loadModel(path);
 }
 
+void Model::preDraw(ShaderProgram & shader){
+    // TODO: set textureSampler uniforms
+}
+
 void Model::draw(ShaderProgram & shader){
     for(GLuint i=0; i < this->meshes.size(); ++i){
         this->meshes[i].draw(shader);
@@ -46,7 +50,7 @@ void Model::processNode(aiNode* node, const aiScene* scene){
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
     std::vector<Vertex> vertices;
     std::vector<GLuint> indexes;
-    std::vector<TextureSampler> textures;
+    std::vector<TextureSampler*> textures;
 
     // process vertices
     for(GLuint i=0; i < mesh->mNumVertices; ++i){
@@ -75,18 +79,19 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
     if(mesh->mMaterialIndex >= 0){
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         
-        std::vector<TextureSampler> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        std::vector<TextureSampler*> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-        std::vector<TextureSampler> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        std::vector<TextureSampler*> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
     
     return Mesh(vertices, indexes, textures);
 }
 
-std::vector<TextureSampler> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName){
-    std::vector<TextureSampler> textures;
+std::vector<TextureSampler*> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName){
+    std::vector<TextureSampler*> textures;
+
     for(GLuint i=0; i < mat->GetTextureCount(type); ++i){
         aiString str;
         mat->GetTexture(type, i, &str);
@@ -96,16 +101,17 @@ std::vector<TextureSampler> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 
         GLboolean skip = false;
         for(GLuint j=0; j < texturesLoaded.size(); ++j){
-            if(texturesLoaded[j].name == filePath){
-                textures.push_back(texturesLoaded[j]);
+            if(texturesLoaded[j].getFileName() == filePath){
+                textures.push_back(&(texturesLoaded[j]));
                 skip = true;
                 break;
             }
         }
         if(!skip){
-            TextureSampler texture(filePath, GL_TEXTURE0+i);
-            textures.push_back(texture);
-            texturesLoaded.push_back(texture);
+            TextureSampler texture(filePath, GL_TEXTURE0+texturesLoaded.size());
+            texture.setUniformName("material."+typeName);
+            texture.setType(type);
+            textures.push_back(&(texturesLoaded.emplace_back(texture)));
         }
     }
     return textures;
