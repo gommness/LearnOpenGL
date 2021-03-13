@@ -7,9 +7,16 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+struct Material {
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    glm::vec3 ambient;
+    float shininess;
+};
+
 class Model{
     public:
-        Model(GLchar* path);
+        Model(const GLchar* path);
         void draw(ShaderProgram & shader);
     private:
         std::vector<Mesh> meshes;
@@ -21,6 +28,7 @@ class Model{
         void processNode(aiNode* node, const aiScene* scene);
         Mesh processMesh(aiMesh* mesh, const aiScene* scene);
         std::vector<TextureSampler*> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+        Material loadMaterial(aiMaterial* mat);      
 };
 
 #endif

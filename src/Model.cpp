@@ -7,7 +7,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-Model::Model(GLchar* path){
+Model::Model(const GLchar* path){
     loadModel(path);
 }
 
@@ -84,6 +84,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
 
         std::vector<TextureSampler*> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+        std::vector<TextureSampler*> normalMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+        std::vector<TextureSampler*> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+        textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
     }
     
     return Mesh(vertices, indexes, textures);
@@ -115,4 +121,24 @@ std::vector<TextureSampler*> Model::loadMaterialTextures(aiMaterial* mat, aiText
         }
     }
     return textures;
+}
+
+Material Model::loadMaterial(aiMaterial* mat){
+    Material material;
+    aiColor3D color(0.f, 0.f, 0.f);
+    float shininess;
+
+    mat->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+    material.diffuse = glm::vec3(color.r, color.b, color.g);
+
+    mat->Get(AI_MATKEY_COLOR_AMBIENT, color);
+    material.ambient = glm::vec3(color.r, color.b, color.g);
+
+    mat->Get(AI_MATKEY_COLOR_SPECULAR, color);
+    material.specular = glm::vec3(color.r, color.b, color.g);
+
+    mat->Get(AI_MATKEY_SHININESS, shininess);
+    material.shininess = shininess;
+
+    return material;
 }
