@@ -18,8 +18,6 @@ out vec4 color;
 
 void main(){
     vec4 surfaceColor = texture(material.texture_diffuse1, fragTexCoords);
-    if(surfaceColor.a < 0.15)
-        discard;
     color = surfaceColor;
 }
 
