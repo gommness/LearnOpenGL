@@ -114,7 +114,8 @@ std::vector<TextureSampler*> Model::loadMaterialTextures(aiMaterial* mat, aiText
             }
         }
         if(!skip){
-            TextureSampler texture(filePath, GL_TEXTURE0+texturesLoaded.size());
+            TextureSampler texture;
+            texture.load(filePath, GL_TEXTURE0+texturesLoaded.size());
             texture.setUniformName("material."+typeName);
             texture.setType(type);
             textures.push_back(&(texturesLoaded.emplace_back(texture)));

@@ -184,6 +184,8 @@ int main(){
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), SCREEN_WIDTH/SCREEN_HEIGHT, 0.1f, 100.0f); 
 
     Texture texture;
+    texture.setMinFilter(Texture::FilterValue::LINEAR);
+    texture.setMagFilter(Texture::FilterValue::LINEAR);
     try {
         Image image{"media/container2.jpg"};
         texture.load(image, GL_TEXTURE0);
@@ -192,10 +194,10 @@ int main(){
         std::cerr << "failed to load the texture" << std::endl;
         return 1;
     }
-    texture.setFlag(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    texture.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     Texture specularMap;
+    specularMap.setMinFilter(Texture::FilterValue::LINEAR);
+    specularMap.setMagFilter(Texture::FilterValue::LINEAR);
     try {
         Image image{"media/container2_specular2.png"};
         specularMap.load(image, GL_TEXTURE1);
@@ -204,8 +206,6 @@ int main(){
         std::cerr << "failed to load the specularMap" << std::endl;
         return 1;
     }
-    specularMap.setFlag(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    specularMap.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     VertexShader vertex("src/shaders/SpecularMap.vert");
     FragmentShader fragment("src/shaders/MultiLight.frag");

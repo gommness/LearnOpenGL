@@ -6,8 +6,6 @@
 
 class TextureSampler : public Texture {
     public:
-        TextureSampler(std::string name, GLint texUnit) : Texture(name, texUnit), uniform(-1) {}
-
         const std::string& getUniformName() {return uniformName;}
         void setUniformName(const std::string & name) {uniformName = name;}
         void setUniformName(std::string && name) {uniformName = std::move(name);}
@@ -18,7 +16,7 @@ class TextureSampler : public Texture {
 
     private:
         std::string uniformName;
-        GLuint uniform;
+        GLuint uniform = -1;
         aiTextureType type;
 
 };

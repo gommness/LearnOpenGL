@@ -58,7 +58,6 @@ void ShaderProgram::setUniform(const GLuint & uniform, const float value){
     glUniform1f(uniform, value);
 }
 void ShaderProgram::setUniform(const GLuint & uniform, const Texture & value){
-    std::cerr << "AAAAAAA" << std::endl;
     glUniform1i(uniform, value.getTexUnit());
 }
 void ShaderProgram::setUniform(const GLuint & uniform, const float v1, const float v2){

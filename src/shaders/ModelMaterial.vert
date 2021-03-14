@@ -16,5 +16,5 @@ void main(){
     gl_Position = proj * view * model * vec4(aPos, 1.0f);
     fragPos = vec3(model * vec4(aPos, 1.0f));
     fragNormal = mat3(transpose(inverse(model)))*normal;
-    fragTexCoords = vec2(texCoords.x, -texCoords.y);
+    fragTexCoords = vec2(texCoords.x, 1-texCoords.y);
 }

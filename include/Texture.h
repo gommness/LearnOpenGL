@@ -9,6 +9,8 @@
 
 class Texture {
 
+public:
+
     enum FilterFlag{
       MIN_FILTER = GL_TEXTURE_MIN_FILTER,
       MAX_FILTER = GL_TEXTURE_MAG_FILTER
@@ -31,17 +33,17 @@ class Texture {
         EDGE_CLAMP = GL_CLAMP_TO_EDGE,
         BORDER_CLAMP = GL_CLAMP_TO_BORDER
     };
-public:
+
     Texture();
-    Texture(const std::string filename, const GLint texUnit = GL_TEXTURE0, const int soilFormat = SOIL_LOAD_AUTO);
-    Texture(Image& image, const GLint texUnit);
     void load(Image & image, const GLint texUnit);
+    void load(const std::string filename, const GLint texUnit = GL_TEXTURE0, const int soilFormat = SOIL_LOAD_AUTO);
     void bind() const;
     void unbind() const;
     GLint activate() const;
-    void setFlag(const int glTargetFlag, const int glFlag, const bool bind=false, const bool unbind=false);
-    void setWrap(const WrapFlag flag, const WrapValue value, const bool bind=false, const bool unbind=false);
-    void setFilter(const FilterFlag flag, const FilterValue value, const bool bind=false, const bool unbind=false);
+    void setMinFilter(FilterValue f);
+    void setMagFilter(FilterValue f);
+    void setWrapS(WrapValue w);
+    void setWrapT(WrapValue w);
     const std::string& getFileName() {return filename;}
     void setFileName(const std::string& name) {filename = name;}
     void setFileName(const std::string&& name) {filename = std::move(name);}
@@ -51,11 +53,18 @@ public:
 private:
 
     static GLint glFormat(const int channels);
+    void loadFilters();
+    void loadWraps();
 
     int forceChannels;
     std::string filename;
     GLint texUnit;
     GLuint textureId;
+
+    FilterValue minFilter = FilterValue::LINEAR;
+    FilterValue magFilter = FilterValue::LINEAR;
+    WrapValue wrapS = WrapValue::REPEAT;
+    WrapValue wrapT = WrapValue::REPEAT;
 
 };
 

@@ -11,10 +11,8 @@ void Texture::load(Image & image, const GLint texUnit){
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     // set texture default wrapping options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    loadWraps();
+    loadFilters();
 
     // bind texture instance with data, and generate mipmaps
     GLint format = Texture::glFormat(image.getChannels());
@@ -25,13 +23,10 @@ void Texture::load(Image & image, const GLint texUnit){
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::Texture(Image& image, const GLint texUnit){
-    this->load(image, texUnit);
-}
-
-Texture::Texture(const std::string filename, const GLint texUnit, const int soilFormat){
+void Texture::load(const std::string filename, const GLint texUnit, const int soilFormat){
     Image image(filename, soilFormat);
-    this->load(image, texUnit);
+    load(image, texUnit);
+
 }
 
 void Texture::bind() const {
@@ -48,21 +43,20 @@ GLint Texture::activate() const {
     return texUnit;
 }
 
-void Texture::setFlag(const int glTargetFlag, const int glFlag, const bool bind, const bool unbind){
-    if(bind)
-        this->bind();
-
-    glTexParameteri(GL_TEXTURE_2D, glTargetFlag, glFlag);
-    
-    if(unbind)
-        this->unbind();
+void Texture::setMinFilter(FilterValue f){
+    minFilter = f;
 }
 
-void Texture::setWrap(const Texture::WrapFlag flag, const Texture::WrapValue value, const bool bind, const bool unbind){
-    setFlag(flag, bind, bind, unbind);
+void Texture::setMagFilter(FilterValue f){
+    magFilter = f;
 }
-void Texture::setFilter(const Texture::FilterFlag flag, const Texture::FilterValue value, const bool bind, const bool unbind){
-    setFlag(flag, bind, bind, unbind);
+
+void Texture::setWrapS(WrapValue w){
+    wrapS = w;
+}
+
+void Texture::setWrapT(WrapValue w){
+    wrapT = w;
 }
 
 GLint Texture::getTexUnit() const {
@@ -86,4 +80,14 @@ GLint Texture::glFormat(const int channels){
         default:
             return 0;
     }
+}
+
+void Texture::loadFilters(){
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+}
+
+void Texture::loadWraps(){
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
 }

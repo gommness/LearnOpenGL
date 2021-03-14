@@ -17,7 +17,9 @@ uniform vec3 viewPos;
 out vec4 color;
 
 void main(){
-    vec3 surfaceColor = vec3(texture(material.texture_diffuse1, fragTexCoords));
-    color = vec4(surfaceColor, 1.0);
+    vec4 surfaceColor = texture(material.texture_diffuse1, fragTexCoords);
+    if(surfaceColor.a < 0.15)
+        discard;
+    color = surfaceColor;
 }
 

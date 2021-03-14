@@ -146,9 +146,10 @@ int main(){
     Rectangle t1(vertices_t1, sizeof(vertices_t1), indexes, sizeof(indexes), shader);
     std::vector<Rectangle*> triangles = {&t1};
 
-    Texture texture("media/sample.jpg", GL_TEXTURE0);
-    texture.setFlag(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    texture.setFlag(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    Texture texture;
+    texture.setMinFilter(Texture::FilterValue::NEAREST);
+    texture.setMagFilter(Texture::FilterValue::NEAREST);
+    texture.load("media/sample.jpg", GL_TEXTURE0);
     shader.setUniform("tex0", texture);
 
     glViewport(0, 0, 800, 600);
