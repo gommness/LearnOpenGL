@@ -202,15 +202,15 @@ int main(int argc, char** argv){
         shader.setUniform(std::string(uniformName).append(iteratorStr).append("].constant"), 1.0f);
         shader.setUniform(std::string(uniformName).append(iteratorStr).append("].linear"), 0.09f);
         shader.setUniform(std::string(uniformName).append(iteratorStr).append("].quadratic"), 0.032f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].ambient"), 0.02f, 0.02f, 0.0f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].diffuse"), 0.5f, 0.5f, 0.3f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].specular"), 1.0f, 1.0f, 0.8f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].ambient"), 0.02f, 0.02f, 0.02f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].diffuse"), 0.5f, 0.5f, 0.5f);
+        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].specular"), 1.0f, 1.0f, 1.0f);
     }
 
     shader.setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
-    shader.setUniform("dirLight.ambient", 0.02f, 0.02f, 0.0f);
-    shader.setUniform("dirLight.diffuse", 0.5f, 0.5f, 0.1f);
-    shader.setUniform("dirLight.specular", 0.6f, 0.6f, 0.4f);
+    shader.setUniform("dirLight.ambient", 0.0f, 0.0f, 0.09f);
+    shader.setUniform("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
+    shader.setUniform("dirLight.specular", 0.6f, 0.6f, 0.6f);
 
     VertexShader lampVertex("src/shaders/Lamp.vert");
     FragmentShader lampFragment("src/shaders/Lamp.frag");
