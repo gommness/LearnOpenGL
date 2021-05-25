@@ -12,10 +12,11 @@ private:
     GLuint shaderProgram;
     std::string name;
 
-    GLint link(const VertexShader & vertex, const FragmentShader & fragment);
 public:
+    ShaderProgram();
     ShaderProgram(const std::string & vertexName, const std::string & fragmentName, const std::string & name="");
     ShaderProgram(const VertexShader & vertex, const FragmentShader & fragment, const std::string & name="");
+    GLint link(const VertexShader & vertex, const FragmentShader & fragment);
     void use();
     GLuint getUniform(const std::string & uniform);
 

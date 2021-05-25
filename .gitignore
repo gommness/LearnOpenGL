@@ -6,3 +6,6 @@
 *.js
 *.swp
 *.blend*
+*.png
+*.jpeg
+**/media

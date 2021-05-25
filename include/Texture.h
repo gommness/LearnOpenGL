@@ -50,21 +50,24 @@ public:
     GLint getTexUnit() const;
     operator GLuint() const;
 
-private:
-
-    static GLint glFormat(const int channels);
-    void loadFilters();
-    void loadWraps();
-
-    int forceChannels;
-    std::string filename;
+protected:
+    static const GLuint textureType;
     GLint texUnit;
     GLuint textureId;
+    int forceChannels;
+    std::string filename;
+    void loadFilters();
+    void loadWraps();
+    void loadImage(Image * image);
+    static GLint glFormat(const int channels);
+
+private:
 
     FilterValue minFilter = FilterValue::LINEAR;
     FilterValue magFilter = FilterValue::LINEAR;
     WrapValue wrapS = WrapValue::REPEAT;
     WrapValue wrapT = WrapValue::REPEAT;
+    WrapValue wrapR = WrapValue::REPEAT;
 
 };
 

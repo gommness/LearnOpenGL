@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+ShaderProgram::ShaderProgram() {}
+
 ShaderProgram::ShaderProgram(const std::string & vertexName, const std::string & fragmentName, const std::string & name){
     VertexShader vertex(vertexName);
     FragmentShader fragment(fragmentName);

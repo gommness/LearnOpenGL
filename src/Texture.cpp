@@ -1,26 +1,33 @@
 #include "Texture.h"
 
-Texture::Texture(){}
+const GLuint Texture::textureType = GL_TEXTURE_2D;
+
+Texture::Texture(){
+    glGenTextures(1,&textureId);
+}
+
+void Texture::loadImage(Image * image){
+    // bind texture instance with data, and generate mipmaps
+    GLint format = Texture::glFormat(image->getChannels());
+    glTexImage2D(textureType, 0, format, image->getWidth(), image->getHeight(), 0, format, GL_UNSIGNED_BYTE, image->getData());
+}
 
 void Texture::load(Image & image, const GLint texUnit){
     this->texUnit = texUnit;
     this->filename = image.getFileName();
     // generate texture instance
-    glGenTextures(1,&textureId);
     glActiveTexture(texUnit);
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    bind();
 
     // set texture default wrapping options
     loadWraps();
     loadFilters();
+    loadImage(&image);
 
-    // bind texture instance with data, and generate mipmaps
-    GLint format = Texture::glFormat(image.getChannels());
-    glTexImage2D(GL_TEXTURE_2D, 0, format, image.getWidth(), image.getHeight(), 0, format, GL_UNSIGNED_BYTE, image.getData());
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(textureType);
 
-    // unbind GL_TEXTURE_2D
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // unbind textureType
+    glBindTexture(textureType, 0);
 }
 
 void Texture::load(const std::string filename, const GLint texUnit, const int soilFormat){
@@ -30,11 +37,11 @@ void Texture::load(const std::string filename, const GLint texUnit, const int so
 }
 
 void Texture::bind() const {
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    glBindTexture(textureType, textureId);
 }
 
 void Texture::unbind() const {
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(textureType, 0);
 }
 
 GLint Texture::activate() const {
@@ -83,11 +90,12 @@ GLint Texture::glFormat(const int channels){
 }
 
 void Texture::loadFilters(){
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+    glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(textureType, GL_TEXTURE_MAG_FILTER, magFilter);
 }
 
 void Texture::loadWraps(){
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+    glTexParameteri(textureType, GL_TEXTURE_WRAP_S, wrapS);
+    glTexParameteri(textureType, GL_TEXTURE_WRAP_T, wrapT);
+    glTexParameteri(textureType, GL_TEXTURE_WRAP_R, wrapR);
 }
