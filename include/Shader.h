@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <GL/glew.h>
+#include "TemplateShader.h"
 
 class Shader {
 protected:
@@ -13,6 +14,7 @@ protected:
     int load(const std::string & filename, const GLuint & type);
 public:
     Shader(const std::string  & filename, GLuint type);
+    Shader(const TemplateShader& temp, GLuint type);
     ~Shader();
     operator GLuint() const;
     std::string getName() const;

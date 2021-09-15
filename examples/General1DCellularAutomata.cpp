@@ -10,6 +10,7 @@
 #include "Model.h"
 #include "Utils.h"
 #include "ShaderProgram.h"
+#include "TemplateShader.h"
 #include "Camera.h"
 
 float SCREEN_WIDTH = 1024.0f;
@@ -194,13 +195,37 @@ int strToNumber(char* str, int def) {
     return output;
 }
 
+std::string convertToBin(std::string & number) {
+    std::string output = "00000000";
+    unsigned int n = 0;
+    n = std::stoi(number);
+    if (n <= 0) {
+        return output;
+    }
+    int i = 0;
+    while(n > 0) {
+        output[i] = '0' + (n % 2);
+        n = n/2;
+        i++;
+    }
+    std::reverse(output.begin(), output.end());
+    return output;
+}
+
 int main(int argc, char** argv){
 
     int option;
     std::string initialStateFile;
     std::string programFile;
+    std::string automataRule;
 
-    while((option = getopt(argc, argv, ":i:p:r:g:b:")) != -1) {
+    if(argc < 3){
+        std::cerr << "not enough arguments." << std::endl;
+        std::cerr << "usage: " << argv[0] << " shaderProgram image" << std::endl;
+        return 1;
+    }
+
+    while((option = getopt(argc, argv, ":i:p:r:g:b:R:")) != -1) {
         switch(option) {
             case 'i':
                 initialStateFile = optarg;
@@ -217,14 +242,12 @@ int main(int argc, char** argv){
             case 'b':
                 color.z = ((float)strToNumber(optarg, 255))/255;
                 break;
+            case 'R':
+                std::string arg = optarg;
+                automataRule = convertToBin(arg);
         }
     }
-
-    if(argc < 3){
-        std::cerr << "not enough arguments." << std::endl;
-        std::cerr << "usage: " << argv[0] << " -p shaderProgram -i image [-r red] [-g green] [-b blue]" << std::endl;
-        return 1;
-    }
+    std::cout << "Automata Rule: " << automataRule << std::endl;
 
     Image initialState(initialStateFile.c_str());
     SCREEN_WIDTH = initialState.getWidth();
@@ -234,9 +257,28 @@ int main(int argc, char** argv){
     if(!window) return 1;
 
     // canvas geometry and shaders
+
+    std::string rule111 = "return "+std::string{automataRule[0]}+";\n";
+    std::string rule110 = "return "+std::string{automataRule[1]}+";\n";
+    std::string rule101 = "return "+std::string{automataRule[2]}+";\n";
+    std::string rule100 = "return "+std::string{automataRule[3]}+";\n";
+    std::string rule011 = "return "+std::string{automataRule[4]}+";\n";
+    std::string rule010 = "return "+std::string{automataRule[5]}+";\n";
+    std::string rule001 = "return "+std::string{automataRule[6]}+";\n";
+    std::string rule000 = "return "+std::string{automataRule[7]}+";\n";
     
+    TemplateShader tempShader(programFile.c_str());
+    tempShader.addSymbol("rule000", rule000);
+    tempShader.addSymbol("rule001", rule001);
+    tempShader.addSymbol("rule010", rule010);
+    tempShader.addSymbol("rule011", rule011);
+    tempShader.addSymbol("rule100", rule100);
+    tempShader.addSymbol("rule101", rule101);
+    tempShader.addSymbol("rule110", rule110);
+    tempShader.addSymbol("rule111", rule111);
+    tempShader.preprocess();
     VertexShader canvasVertexShader("src/shaders/PostProcessing.vert");
-    FragmentShader canvasFragmentShader(programFile.c_str());
+    FragmentShader canvasFragmentShader(tempShader);
     VertexShader copyVertexShader("src/shaders/SimplePass.vert");
     FragmentShader copyFragmentShader("src/shaders/CopyShader.frag");
 
@@ -305,3 +347,4 @@ int main(int argc, char** argv){
     glfwTerminate();
     return 0;
 }
+

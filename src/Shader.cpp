@@ -9,6 +9,13 @@ Shader::Shader(const std::string  & filename, GLuint type){
     this->compile();
 }
 
+Shader::Shader(const TemplateShader& temp, GLuint type) {
+    code = temp.getCode();
+    this->name = temp.getFileName();
+    this->type = type;
+    compile();
+}
+
 Shader::~Shader(){
     if(shader != 0)
         glDeleteShader(shader);
@@ -33,7 +40,7 @@ GLint Shader::compile(){
     return success;
 }
 
-int Shader::load(const std::string  & filename, const GLuint  & type){
+int Shader::load(const std::string  & filename, const GLuint & type){
     FILE* fp;
 
     fp = std::fopen(filename.c_str(), "r");
