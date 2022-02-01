@@ -6,10 +6,10 @@
 #include <sstream>
 
 #define STR(x) #x
-#define DBG(x) std::cout << "\u001b[30;1m [DEBUG]: " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
-#define MSG(x) std::cout << "\u001b[32m [NOTICE]: " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
-#define WAR(x) std::cout << "\u001b[33m [WARNING]: " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
-#define ERR(x) std::cout << "\u001b[31m [ERROR]: " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
+#define DBG(x) std::cout << "\u001b[30;1m [DEBUG]: " << __FILE__ << " : " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
+#define MSG(x) std::cout << "\u001b[32m [NOTICE]: " << __FILE__ << " : " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
+#define WAR(x) std::cout << "\u001b[33m [WARNING]: " << __FILE__ << " : " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
+#define ERR(x) std::cout << "\u001b[31m [ERROR]: " << __FILE__ << " : " << STR(x) << ": " << x << "\u001b[0m" << std::endl;
 
 template <typename T>
 std::string vectorToString(std::vector<T>& v){

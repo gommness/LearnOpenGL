@@ -9,6 +9,8 @@
 #include "Texture.h"
 #include "ShaderProgram.h"
 
+class Model;
+
 struct Vertex {
     glm::vec3 position;
     glm::vec3 normal;
@@ -21,9 +23,10 @@ class Mesh {
     public:
         std::vector<Vertex> vertices;
         std::vector<GLuint> indexes;
-        std::vector<TextureSampler*> textures;
+        std::vector<unsigned int> textureIds;
+        Model* owner;
 
-        Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler*> & textures);
+        Mesh(Model& owner, std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<unsigned int> & textureIds);
         std::string toString();
         void draw(ShaderProgram shader);
 

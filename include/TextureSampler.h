@@ -3,10 +3,15 @@
 
 #include "Texture.h"
 #include <assimp/scene.h>
+#include <iostream>
+
+class TextureSampler;
+std::string toString(TextureSampler& t);
+std::string toString(TextureSampler* t);
 
 class TextureSampler : public Texture {
     public:
-        const std::string& getUniformName() {return uniformName;}
+        const std::string& getUniformName() const {return uniformName;}
         void setUniformName(const std::string & name) {uniformName = name;}
         void setUniformName(std::string && name) {uniformName = std::move(name);}
         const GLuint getUniform() const {return uniform;}

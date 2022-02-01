@@ -23,17 +23,17 @@ Camera camera;
 
 void processInput(){
     if(keys[GLFW_KEY_W])
-       camera.translate(Camera::Movement::FORWARD, deltaTime);
+       camera.translate(Camera::Movement::FORWARD, 3*deltaTime);
     if(keys[GLFW_KEY_S])
-       camera.translate(Camera::Movement::BACKWARD, deltaTime);
+       camera.translate(Camera::Movement::BACKWARD, 3*deltaTime);
     if(keys[GLFW_KEY_A])
-       camera.translate(Camera::Movement::LEFT, deltaTime);
+       camera.translate(Camera::Movement::LEFT, 3*deltaTime);
     if(keys[GLFW_KEY_D])
-       camera.translate(Camera::Movement::RIGHT, deltaTime);
+       camera.translate(Camera::Movement::RIGHT, 3*deltaTime);
     if(keys[GLFW_KEY_SPACE])
-       camera.translate(Camera::Movement::UP, deltaTime);
+       camera.translate(Camera::Movement::UP, 3*deltaTime);
     if(keys[GLFW_KEY_LEFT_SHIFT])
-       camera.translate(Camera::Movement::DOWN, deltaTime);
+       camera.translate(Camera::Movement::DOWN, 3*deltaTime);
 }
 
 void error_callback(int error, const char* msg){
@@ -76,7 +76,7 @@ GLFWwindow * windowInit(){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwSetErrorCallback(error_callback);
 
     window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "LearnOpenGL", nullptr, nullptr);
@@ -161,9 +161,7 @@ int main(int argc, char** argv){
     };
 
     glm::vec3 pointLightPositions[] = {
-        glm::vec3( 0.7f, 0.2f, 2.0f),
-        glm::vec3( 2.3f,-3.3f,-4.0f),
-        glm::vec3(-4.0f, 2.0f,-12.0f),
+        //glm::vec3( 0.7f, 7.0f, 15.0f),
     };
     unsigned int nPointLightPositions = sizeof(pointLightPositions)/sizeof(glm::vec3);
 
@@ -189,7 +187,7 @@ int main(int argc, char** argv){
 
     shader.setUniform(objModelUniform, modelMatrix);
     shader.setUniform(objProjUniform , projMatrix);
-    shader.setUniform("material.shininess", 32.0f);
+    shader.setUniform("material.shininess", 0.6f);
 
     // point light uniforms
     GLuint objLightPosUniform[4];
@@ -259,7 +257,7 @@ int main(int argc, char** argv){
             shader.setUniform(objLightPosUniform[i], pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
         }
         modelMatrix = glm::translate(id, glm::vec3(0.0f, 0.0f, -2.0f)); // Translate it down a bit so it's at the center of the scene
-        modelMatrix *= glm::rotate(id, glm::radians((GLfloat)currentFrame*15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //modelMatrix *= glm::rotate(id, glm::radians((GLfloat)currentFrame*15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         shader.setUniform(objModelUniform, modelMatrix);
 
 

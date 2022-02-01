@@ -47,7 +47,7 @@ vec3 computeDirectionalLight(DirectionalLight light, Material material, vec2 tex
 }
 
 vec3 computePointLight(PointLight light, Material material, vec2 texCoords, vec3 normal, vec3 viewDir, vec3 fragPos){
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightDir = normalize(fragPos - light.position);
 
     // Diffuse shading
     float diff = max(dot(lightDir, normal), 0);
@@ -79,6 +79,7 @@ uniform vec3 viewPos;
 out vec4 color;
 
 void main(){
+    vec3 ambientLight= vec3(0.05f, 0.05f, 0.05f);
     vec3 norm = normalize(fragNormal);
     vec3 viewDir = normalize(viewPos - fragPos);
 
@@ -86,6 +87,7 @@ void main(){
     for(int i=0; i<N_POINTS; ++i){
         result += computePointLight(pointLight[i], material, fragTexCoords, fragNormal, viewDir, fragPos);
     }
+    result += ambientLight;
     
     color = fragColor * vec4(result, 1.0);
 }

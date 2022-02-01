@@ -1,7 +1,9 @@
 #include "Mesh.h"
+#include "DebugTools.h"
+#include "Model.h"
 
-Mesh::Mesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<TextureSampler*> & textures) :
-    vertices(vertices), indexes(indexes), textures(textures)
+Mesh::Mesh(Model& owner, std::vector<Vertex> & vertices, std::vector<GLuint> & indexes, std::vector<unsigned int> & textureIds) :
+    vertices(vertices), indexes(indexes), textureIds(textureIds), owner(&owner)
 {
     setUp();
 }
@@ -11,22 +13,22 @@ void Mesh::draw(ShaderProgram shader){
     GLuint specularNr = 1;
 
     std::string uniformName;
-    for(unsigned int i = 0; i < textures.size(); i++){
-        switch(textures[i]->getType()){
+    for(unsigned int i = 0; i < textureIds.size(); i++){
+        switch(owner->getTexture(textureIds[i]).getType()){
             case aiTextureType_DIFFUSE:
-                uniformName = textures[i]->getUniformName()+std::to_string(diffuseNr);
+                uniformName = owner->getTexture(textureIds[i]).getUniformName()+std::to_string(diffuseNr);
                 diffuseNr++;
                 break;
             case aiTextureType_SPECULAR:
-                uniformName = textures[i]->getUniformName()+std::to_string(specularNr);
+                uniformName = owner->getTexture(textureIds[i]).getUniformName()+std::to_string(specularNr);
                 specularNr++;
                 break;
             default:
-                uniformName = textures[i]->getUniformName();
+                uniformName = owner->getTexture(textureIds[i]).getUniformName();
                 break;
         }
-        shader.setUniform(uniformName,*(textures[i]));
-        textures[i]->bind();
+        shader.setUniform(uniformName,owner->getTexture(textureIds[i]));
+        owner->getTexture(textureIds[i]).bind();
     }
     // reset tex units
     glActiveTexture(GL_TEXTURE0);

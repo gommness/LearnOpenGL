@@ -16,7 +16,7 @@ namespace debug{
     void printVector(std::vector<T>& vec, std::string pre = ""){
         std::cout << pre;
         for (long unsigned int i = 0; i < vec.size(); i++) {
-            std::cout << "["<<i<<"]: "<<vec[i]<<std::endl;
+            std::cout << "["<<i<<"]: "<<toString(vec[i]) <<std::endl;
         }
         std::cout << std::endl;
     }

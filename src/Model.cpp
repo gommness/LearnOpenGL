@@ -53,7 +53,7 @@ void Model::processNode(aiNode* node, const aiScene* scene){
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
     std::vector<Vertex> vertices;
     std::vector<GLuint> indexes;
-    std::vector<TextureSampler*> textures;
+    std::vector<unsigned int> textures;
 
     // process vertices
     for(GLuint i=0; i < mesh->mNumVertices; ++i){
@@ -85,52 +85,35 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
     
     // process material
     if(mesh->mMaterialIndex >= 0){
-        DBG("HAY MATERIALES")
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         
-        std::vector<TextureSampler*> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        std::vector<unsigned int> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-        debug::printVector<TextureSampler*>(diffuseMaps, "diffuseMaps: ");
 
-        std::vector<TextureSampler*> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-        debug::printVector<TextureSampler*>(specularMaps, "specularMaps: ");
+        //std::vector<unsigned int> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        //textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-        std::vector<TextureSampler*> normalMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-        debug::printVector<TextureSampler*>(normalMaps, "normalMaps: ");
+        //std::vector<unsigned int> normalMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+        //textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-        std::vector<TextureSampler*> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-        textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
-        debug::printVector<TextureSampler*>(ambientMaps, "ambientMaps: ");
+        //std::vector<unsigned int> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+        //textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
     }
     if (textures.size() == 0) {
-        DBG("ENTRAMOS EN EL ELSE")
         TextureSampler texture;
         texture.load(DEFAULT_TEXTURE_FILENAME, GL_TEXTURE0+texturesLoaded.size());
         texture.setUniformName("material.texture_diffuse");
         texture.setType(aiTextureType_DIFFUSE);
-        textures.push_back(&(texturesLoaded.emplace_back(texture)));
+        texturesLoaded.emplace_back(texture);
+        textures.emplace_back(texturesLoaded.size()-1);
     }
     
-    debug::printVector<TextureSampler*>(textures, "textures: ");
-    return Mesh(vertices, indexes, textures);
+    return Mesh(*this, vertices, indexes, textures);
 }
 
-std::vector<TextureSampler*> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName){
-    std::vector<TextureSampler*> textures;
+std::vector<unsigned int> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName){
+    std::vector<unsigned int> textures;
 
-    DBG(mat->GetTextureCount(aiTextureType_NONE));
-    DBG(mat->GetTextureCount(aiTextureType_DIFFUSE));
-    DBG(mat->GetTextureCount(aiTextureType_AMBIENT));
-    DBG(mat->GetTextureCount(aiTextureType_DISPLACEMENT));
-    DBG(mat->GetTextureCount(aiTextureType_EMISSIVE));
-    DBG(mat->GetTextureCount(aiTextureType_NORMALS));
-    DBG(mat->GetTextureCount(aiTextureType_SHININESS));
-    DBG(mat->GetTextureCount(aiTextureType_OPACITY));
-    DBG(mat->GetTextureCount(aiTextureType_LIGHTMAP));
-    DBG(mat->GetTextureCount(aiTextureType_REFLECTION));
-    DBG(mat->GetTextureCount(aiTextureType_UNKNOWN));
     for(GLuint i=0; i < mat->GetTextureCount(type); ++i){
         aiString str;
         mat->GetTexture(type, i, &str);
@@ -141,7 +124,7 @@ std::vector<TextureSampler*> Model::loadMaterialTextures(aiMaterial* mat, aiText
         GLboolean skip = false;
         for(GLuint j=0; j < texturesLoaded.size(); ++j){
             if(texturesLoaded[j].getFileName() == filePath){
-                textures.push_back(&(texturesLoaded[j]));
+                textures.push_back(j);
                 skip = true;
                 break;
             }
@@ -151,7 +134,8 @@ std::vector<TextureSampler*> Model::loadMaterialTextures(aiMaterial* mat, aiText
             texture.load(filePath, GL_TEXTURE0+texturesLoaded.size());
             texture.setUniformName("material."+typeName);
             texture.setType(type);
-            textures.push_back(&(texturesLoaded.emplace_back(texture)));
+            texturesLoaded.push_back(texture);
+            textures.push_back(texturesLoaded.size()-1);
         }
     }
     return textures;

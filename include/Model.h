@@ -18,6 +18,7 @@ class Model{
     public:
         Model(const GLchar* path);
         void draw(ShaderProgram & shader);
+        const TextureSampler& getTexture(unsigned int i) { return texturesLoaded[i];}
     private:
         std::vector<Mesh> meshes;
         std::vector<TextureSampler> texturesLoaded;
@@ -27,7 +28,7 @@ class Model{
         void preDraw(ShaderProgram & shader);
         void processNode(aiNode* node, const aiScene* scene);
         Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-        std::vector<TextureSampler*> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+        std::vector<unsigned int> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
         Material loadMaterial(aiMaterial* mat);      
 };
 

@@ -32,6 +32,16 @@ ShaderProgram copyShader;
 
 int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image = nullptr);
 
+void printHelp(std::ostream& out, const char* programName) {
+    out << "usage: " << programName << std::endl;
+    out << "-i initialState.png" << std::endl;
+    out << "-p programFragmentshader" << std::endl;
+    out << "-R rule" << std::endl;
+    out << "[-r red]" << std::endl;
+    out << "[-g green]" << std::endl;
+    out << "[-b blue]" << std::endl;
+}
+
 class Buffer {
 public:
     GLuint self;
@@ -216,12 +226,11 @@ int main(int argc, char** argv){
 
     int option;
     std::string initialStateFile;
-    std::string programFile;
+    std::string programFile("src/shaders/CellularAutomata/general1DAutomata.template.frag");
     std::string automataRule;
 
     if(argc < 3){
-        std::cerr << "not enough arguments." << std::endl;
-        std::cerr << "usage: " << argv[0] << " shaderProgram image" << std::endl;
+        printHelp(std::cerr, argv[0]);
         return 1;
     }
 

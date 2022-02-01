@@ -183,7 +183,7 @@ int main(){
     try {
         Image image{"media/container2.jpg"};
         texture.load(image, GL_TEXTURE0);
-    } catch (std::runtime_error) {
+    } catch (std::runtime_error&) {
         glfwTerminate();
         std::cerr << "failed to load the texture" << std::endl;
         return 1;
@@ -195,7 +195,7 @@ int main(){
     try {
         Image image{"media/container2_specular2.png"};
         specularMap.load(image, GL_TEXTURE1);
-    } catch (std::runtime_error) {
+    } catch (std::runtime_error&) {
         glfwTerminate();
         std::cerr << "failed to load the specularMap" << std::endl;
         return 1;
