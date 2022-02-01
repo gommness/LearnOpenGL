@@ -6,6 +6,9 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "DebugTools.h"
+
+constexpr char DEFAULT_TEXTURE_FILENAME[] = "media/default_texture.png";
 
 Model::Model(const GLchar* path){
     loadModel(path);
@@ -57,6 +60,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
         Vertex vertex;
         vertex.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
         vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+        if (mesh->HasVertexColors(0)) {
+            vertex.color = glm::vec4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
+        } else {
+            vertex.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
         // TODO we only use 1 texture coordinate per vertex, expand later
         if(mesh->mTextureCoords[0]){
             vertex.texCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
@@ -77,27 +85,52 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
     
     // process material
     if(mesh->mMaterialIndex >= 0){
+        DBG("HAY MATERIALES")
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         
         std::vector<TextureSampler*> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+        debug::printVector<TextureSampler*>(diffuseMaps, "diffuseMaps: ");
 
         std::vector<TextureSampler*> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        debug::printVector<TextureSampler*>(specularMaps, "specularMaps: ");
 
         std::vector<TextureSampler*> normalMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        debug::printVector<TextureSampler*>(normalMaps, "normalMaps: ");
 
         std::vector<TextureSampler*> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
         textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
+        debug::printVector<TextureSampler*>(ambientMaps, "ambientMaps: ");
+    }
+    if (textures.size() == 0) {
+        DBG("ENTRAMOS EN EL ELSE")
+        TextureSampler texture;
+        texture.load(DEFAULT_TEXTURE_FILENAME, GL_TEXTURE0+texturesLoaded.size());
+        texture.setUniformName("material.texture_diffuse");
+        texture.setType(aiTextureType_DIFFUSE);
+        textures.push_back(&(texturesLoaded.emplace_back(texture)));
     }
     
+    debug::printVector<TextureSampler*>(textures, "textures: ");
     return Mesh(vertices, indexes, textures);
 }
 
 std::vector<TextureSampler*> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName){
     std::vector<TextureSampler*> textures;
 
+    DBG(mat->GetTextureCount(aiTextureType_NONE));
+    DBG(mat->GetTextureCount(aiTextureType_DIFFUSE));
+    DBG(mat->GetTextureCount(aiTextureType_AMBIENT));
+    DBG(mat->GetTextureCount(aiTextureType_DISPLACEMENT));
+    DBG(mat->GetTextureCount(aiTextureType_EMISSIVE));
+    DBG(mat->GetTextureCount(aiTextureType_NORMALS));
+    DBG(mat->GetTextureCount(aiTextureType_SHININESS));
+    DBG(mat->GetTextureCount(aiTextureType_OPACITY));
+    DBG(mat->GetTextureCount(aiTextureType_LIGHTMAP));
+    DBG(mat->GetTextureCount(aiTextureType_REFLECTION));
+    DBG(mat->GetTextureCount(aiTextureType_UNKNOWN));
     for(GLuint i=0; i < mat->GetTextureCount(type); ++i){
         aiString str;
         mat->GetTexture(type, i, &str);

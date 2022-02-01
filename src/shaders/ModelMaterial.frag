@@ -4,8 +4,8 @@
 
 
 struct Material{
-    sampler2D texture_diffuse1;
-    sampler2D texture_specular1;
+    sampler2D texture_diffuse;
+    sampler2D texture_specular;
     float shininess;
 };
 
@@ -38,10 +38,10 @@ vec3 computeDirectionalLight(DirectionalLight light, Material material, vec2 tex
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0), material.shininess);
 
-    vec3 surfaceColor = vec3(texture(material.texture_diffuse1, texCoords));
+    vec3 surfaceColor = vec3(texture(material.texture_diffuse, texCoords));
     vec3 ambient = light.ambient * surfaceColor;
     vec3 diffuse = light.diffuse * diff * surfaceColor;
-    vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, texCoords));
+    vec3 specular = light.specular * spec * vec3(texture(material.texture_specular, texCoords));
 
     return ambient + diffuse + specular;
 }
@@ -58,10 +58,10 @@ vec3 computePointLight(PointLight light, Material material, vec2 texCoords, vec3
     float dist = length(light.position - fragPos);
     float attenuation = 1.0f/(light.constant + light.linear*dist + light.quadratic*dist*dist);
 
-    vec3 surfaceColor = vec3(texture(material.texture_diffuse1, texCoords));
+    vec3 surfaceColor = vec3(texture(material.texture_diffuse, texCoords));
     vec3 ambient = light.ambient * surfaceColor;
     vec3 diffuse = light.diffuse * diff * surfaceColor;
-    vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, texCoords));
+    vec3 specular = light.specular * spec * vec3(texture(material.texture_specular, texCoords));
 
     return ambient + diffuse + specular;
 }
@@ -69,6 +69,7 @@ vec3 computePointLight(PointLight light, Material material, vec2 texCoords, vec3
 in vec3 fragNormal;
 in vec3 fragPos;
 in vec2 fragTexCoords;
+in vec4 fragColor;
 
 uniform DirectionalLight dirLight;
 uniform PointLight pointLight[N_POINTS];
@@ -86,5 +87,5 @@ void main(){
         result += computePointLight(pointLight[i], material, fragTexCoords, fragNormal, viewDir, fragPos);
     }
     
-    color = vec4(result, 1.0);
+    color = fragColor * vec4(result, 1.0);
 }

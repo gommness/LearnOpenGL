@@ -76,7 +76,7 @@ GLFWwindow * windowInit(){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwSetErrorCallback(error_callback);
 
     window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "LearnOpenGL", nullptr, nullptr);
@@ -164,7 +164,6 @@ int main(int argc, char** argv){
         glm::vec3( 0.7f, 0.2f, 2.0f),
         glm::vec3( 2.3f,-3.3f,-4.0f),
         glm::vec3(-4.0f, 2.0f,-12.0f),
-        glm::vec3( 0.0f, 0.0f,-3.0f)
     };
     unsigned int nPointLightPositions = sizeof(pointLightPositions)/sizeof(glm::vec3);
 
