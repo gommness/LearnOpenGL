@@ -90,14 +90,14 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
         std::vector<unsigned int> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-        //std::vector<unsigned int> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-        //textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        std::vector<unsigned int> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-        //std::vector<unsigned int> normalMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-        //textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        std::vector<unsigned int> normalMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-        //std::vector<unsigned int> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-        //textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
+        std::vector<unsigned int> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+        textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
     }
     if (textures.size() == 0) {
         TextureSampler texture;
