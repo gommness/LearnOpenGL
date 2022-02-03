@@ -19,6 +19,7 @@ public:
     GLint link(const VertexShader & vertex, const FragmentShader & fragment);
     void use();
     GLuint getUniform(const std::string & uniform);
+    const std::string& getName() const {return name;}
 
     void setUniform(const GLuint & uniform, const bool value);
     void setUniform(const GLuint & uniform, const int value);

@@ -11,6 +11,8 @@
 #include "ShaderProgram.h"
 #include "Camera.h"
 
+#include <array>
+
 #define SCREEN_WIDTH 800.0f
 #define SCREEN_HEIGHT 600.0f
 
@@ -20,8 +22,21 @@ GLfloat lastFrame = 0;
 bool keys[1024];
 
 Camera camera;
+std::vector<ShaderProgram> shaders;
+ShaderProgram* currentShader = nullptr;
+unsigned int shaderIndex = 0;
+
+using PointLightVector = std::vector<std::array<GLuint, 1>>;
+
+glm::vec4 pointLightPositions[] = {
+    glm::vec4( 0.0f, 0.0f, 30.0f, 1.0f),
+    //glm::vec3( 7.7f, 3.0f, -5.0f),
+    //glm::vec3( -7.0f, -9.0f, 0.0f),
+};
+unsigned int nPointLightPositions = sizeof(pointLightPositions)/sizeof(glm::vec4);
 
 void processInput(){
+    static bool tReleased = true;
     if(keys[GLFW_KEY_W])
        camera.translate(Camera::Movement::FORWARD, 3*deltaTime);
     if(keys[GLFW_KEY_S])
@@ -34,6 +49,14 @@ void processInput(){
        camera.translate(Camera::Movement::UP, 3*deltaTime);
     if(keys[GLFW_KEY_LEFT_SHIFT])
        camera.translate(Camera::Movement::DOWN, 3*deltaTime);
+    if(tReleased && keys[GLFW_KEY_T]) {
+        shaderIndex = (shaderIndex + 1) % shaders.size();
+        currentShader = &(shaders[shaderIndex]);
+        DBG(currentShader->getName());
+        tReleased = false;
+    } else if (!keys[GLFW_KEY_T]) {
+        tReleased = true;
+    }
 }
 
 void error_callback(int error, const char* msg){
@@ -109,6 +132,42 @@ GLFWwindow* init(){
     return window;
 }
 
+void setUniforms(glm::mat4& projMatrix, glm::mat4& modelMatrix, PointLightVector& objLightPosUniform) {
+
+    unsigned int sIndex = 0;
+    for (auto& sh : shaders) {
+        sh.use();
+        GLuint objModelUniform = sh.getUniform("model");
+        GLuint objProjUniform = sh.getUniform("proj");
+
+        sh.setUniform(objModelUniform, modelMatrix);
+        sh.setUniform(objProjUniform , projMatrix);
+        sh.setUniform("material.shininess", 0.7f);
+
+        // point light uniforms
+        std::string iteratorStr;
+        std::string uniformName = "pointLight[";
+        for(unsigned int i=0; i<nPointLightPositions; i++){
+            DBG(i);
+            iteratorStr = std::to_string(i);
+            DBG(std::string(uniformName).append(iteratorStr).append("].position"));
+            objLightPosUniform[sIndex][i] = sh.getUniform(std::string(uniformName).append(iteratorStr).append("].position"));
+            sh.setUniform(std::string(uniformName).append(iteratorStr).append("].constant"), 1.0f);
+            sh.setUniform(std::string(uniformName).append(iteratorStr).append("].linear"), 0.09f);
+            sh.setUniform(std::string(uniformName).append(iteratorStr).append("].quadratic"), 0.032f);
+            sh.setUniform(std::string(uniformName).append(iteratorStr).append("].ambient"), 0.02f, 0.02f, 0.02f);
+            sh.setUniform(std::string(uniformName).append(iteratorStr).append("].diffuse"), 0.3f, 0.3f, 0.3f);
+            sh.setUniform(std::string(uniformName).append(iteratorStr).append("].specular"), 1.0f, 1.0f, 1.0f);
+        }
+
+        sh.setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        sh.setUniform("dirLight.ambient", 0.0f, 0.0f, 0.09f);
+        sh.setUniform("dirLight.diffuse", 0.3f, 0.3f, 0.3f);
+        sh.setUniform("dirLight.specular", 0.6f, 0.6f, 0.6f);
+        sIndex++;
+    }
+}
+
 int main(int argc, char** argv){
 
     if(argc != 2){
@@ -160,58 +219,44 @@ int main(int argc, char** argv){
     -0.5f,  0.5f, -0.5f
     };
 
-    glm::vec3 pointLightPositions[] = {
-        //glm::vec3( 0.7f, 7.0f, 15.0f),
-    };
-    unsigned int nPointLightPositions = sizeof(pointLightPositions)/sizeof(glm::vec3);
 
     GLFWwindow * window = init();
     if(!window) return 1;
 
     Model model(argv[1]);
+    VertexShader vSimpleShader("src/shaders/ModelMaterialVertexLight.vert");
+    FragmentShader fSimpleShader("src/shaders/ModelMaterialVertexLight.frag");
+    ShaderProgram simpleShader(vSimpleShader, fSimpleShader, "simpleShader");
+    shaders.push_back(simpleShader);
     VertexShader vShader("src/shaders/ModelMaterial.vert");
     FragmentShader fShader("src/shaders/ModelMaterial.frag");
-    ShaderProgram shader(vShader, fShader, "renderingShader");
-    shader.use();
+    ShaderProgram usualShader(vShader, fShader, "renderingShader");
+    shaders.push_back(usualShader);
+    VertexShader vCellShade("src/shaders/ModelMaterial.vert");
+    FragmentShader fCellShade("src/shaders/ModelMaterialCellShade.frag");
+    ShaderProgram cellShade(vCellShade, fCellShade, "CellShading");
+    shaders.push_back(cellShade);
 
-    GLuint objModelUniform = shader.getUniform("model");
-    GLuint objViewUniform = shader.getUniform("view");
-    GLuint objProjUniform = shader.getUniform("proj");
-    GLuint objViewPosUniform = shader.getUniform("viewPos");
+    currentShader = &(shaders[0]);
 
     glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
     glm::mat4 projMatrix = glm::perspective(glm::radians(45.0f), SCREEN_WIDTH/SCREEN_HEIGHT, 0.1f, 100.0f); 
     glm::mat4 id(1);
     glm::mat4 modelMatrix(1);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
 
-    shader.setUniform(objModelUniform, modelMatrix);
-    shader.setUniform(objProjUniform , projMatrix);
-    shader.setUniform("material.shininess", 0.6f);
-
-    // point light uniforms
-    GLuint objLightPosUniform[4];
-    std::string iteratorStr;
-    std::string uniformName = "pointLight[";
-    for(unsigned int i=0; i<nPointLightPositions; i++){
-        iteratorStr = std::to_string(i);
-        objLightPosUniform[i] = shader.getUniform(std::string(uniformName).append(iteratorStr).append("].position"));
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].constant"), 1.0f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].linear"), 0.09f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].quadratic"), 0.032f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].ambient"), 0.02f, 0.02f, 0.02f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].diffuse"), 0.5f, 0.5f, 0.5f);
-        shader.setUniform(std::string(uniformName).append(iteratorStr).append("].specular"), 1.0f, 1.0f, 1.0f);
+    PointLightVector objLightPosUniform;
+    for (unsigned int i = 0; i < shaders.size(); i++) {
+        std::array<GLuint, 1> arr;
+        objLightPosUniform.push_back(arr);
     }
 
-    shader.setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
-    shader.setUniform("dirLight.ambient", 0.0f, 0.0f, 0.09f);
-    shader.setUniform("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
-    shader.setUniform("dirLight.specular", 0.6f, 0.6f, 0.6f);
 
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
     VertexShader lampVertex("src/shaders/Lamp.vert");
     FragmentShader lampFragment("src/shaders/Lamp.frag");
     ShaderProgram lampShader(lampVertex, lampFragment, "lamp");
+
+    setUniforms(projMatrix, modelMatrix, objLightPosUniform);
 
     GLuint lampModelUniform = lampShader.getUniform("model");
     GLuint lampViewUniform = lampShader.getUniform("view");
@@ -235,10 +280,14 @@ int main(int argc, char** argv){
     glBindVertexArray(0);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
     glViewport(0, 0, 800, 600);
+    glDepthFunc(GL_LESS);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
+    glm::mat4 simpleRotation = glm::rotate(id, glm::radians(1.0f), glm::vec3(1, 1, 0.0f));
     while(!glfwWindowShouldClose(window)){
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -247,28 +296,17 @@ int main(int argc, char** argv){
         glfwPollEvents();
         processInput();
 
+
         glClearColor(0, 0.12f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.use();
-        shader.setUniform(objViewUniform, camera.getViewMatrix());
-        shader.setUniform(objViewPosUniform, camera.position.x, camera.position.y, camera.position.z);
-        for(unsigned int i=0; i<nPointLightPositions; i++){
-            shader.setUniform(objLightPosUniform[i], pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
-        }
-        modelMatrix = glm::translate(id, glm::vec3(0.0f, 0.0f, -2.0f)); // Translate it down a bit so it's at the center of the scene
-        //modelMatrix *= glm::rotate(id, glm::radians((GLfloat)currentFrame*15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        shader.setUniform(objModelUniform, modelMatrix);
-
-
-        model.draw(shader);
 
         // draw lamp
         glBindVertexArray(lightVAO);
         for(unsigned int i=0; i<nPointLightPositions; i++){
-            glm::mat4 localTranslation = glm::translate(id, pointLightPositions[i]);
+            pointLightPositions[i] = simpleRotation * pointLightPositions[i];
+            glm::mat4 localTranslation = glm::translate(id, glm::vec3(pointLightPositions[i]));
             localTranslation = glm::scale(localTranslation, glm::vec3(0.2f));
-            //localTranslation = timedRotation * localTranslation;
             lampShader.use();
             lampShader.setUniform(lampViewUniform, camera.getViewMatrix());
             lampShader.setUniform(lampModelUniform, localTranslation);
@@ -277,6 +315,22 @@ int main(int argc, char** argv){
             glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/5);
         }
         glBindVertexArray(0);
+
+        currentShader->use();
+        GLuint objViewUniform = currentShader->getUniform("view");
+        GLuint objViewPosUniform = currentShader->getUniform("viewPos");
+        currentShader->setUniform(objViewUniform, camera.getViewMatrix());
+        currentShader->setUniform(objViewPosUniform, camera.position.x, camera.position.y, camera.position.z);
+        for(unsigned int i=0; i<nPointLightPositions; i++){
+            //currentShader->setUniform(objLightPosUniform[i], pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
+            currentShader->setUniform(objLightPosUniform[shaderIndex][i], pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
+        }
+        modelMatrix = glm::translate(id, glm::vec3(0.0f, 0.0f, -2.0f)); // Translate it down a bit so it's at the center of the scene
+        //modelMatrix *= glm::rotate(id, glm::radians((GLfloat)currentFrame*15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        currentShader->setUniform("model", modelMatrix);
+
+
+        model.draw(*currentShader);
 
         glfwSwapBuffers(window);
     }

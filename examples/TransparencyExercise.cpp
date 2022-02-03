@@ -172,9 +172,7 @@ int main(int argc, char** argv){
     windowTexture.load("media/window.png");
 
 
-    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
     glm::mat4 projMatrix = glm::perspective(glm::radians(45.0f), SCREEN_WIDTH/SCREEN_HEIGHT, 0.1f, 100.0f); 
-    glm::mat4 id(1);
     glm::mat4 modelMatrix1(1);
     glm::mat4 modelMatrix2(1);
     glm::mat4 modelMatrix3(1);

@@ -27,8 +27,8 @@ void Mesh::draw(ShaderProgram shader){
                 uniformName = owner->getTexture(textureIds[i]).getUniformName();
                 break;
         }
-        shader.setUniform(uniformName,owner->getTexture(textureIds[i]));
         owner->getTexture(textureIds[i]).bind();
+        shader.setUniform(uniformName,owner->getTexture(textureIds[i]));
     }
     // reset tex units
     glActiveTexture(GL_TEXTURE0);
