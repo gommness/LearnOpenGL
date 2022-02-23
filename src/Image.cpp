@@ -3,8 +3,10 @@
 Image::Image(const std::string & filename, const int soilFormat){
     this->soilFormat = soilFormat;
     data = SOIL_load_image(filename.c_str(), &width, &height, &channels, soilFormat);
-    if(!data)
-        throw Exception("cannot load image: "+filename);
+    if(!data) {
+        std::string reason = " Reason: " + std::string(SOIL_last_result());
+        throw Exception("cannot load image: "+filename + reason);
+    }
     this->filename = std::move(filename);
 }
 

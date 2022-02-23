@@ -111,7 +111,7 @@ vec4 bufferCopy() {
 }
 
 void main(){
-    vec2 pixel = gl_FragCoord.xy/scale;
+    vec2 pixel = gl_FragCoord.xy*scale;
     float golVerticalLimit = 0.25;
 
     if (pixel.y >= golVerticalLimit) {

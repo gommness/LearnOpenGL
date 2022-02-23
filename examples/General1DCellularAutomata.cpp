@@ -13,8 +13,10 @@
 #include "TemplateShader.h"
 #include "Camera.h"
 
-float SCREEN_WIDTH = 1024.0f;
-float SCREEN_HEIGHT = 1024.0f;
+float SCREEN_WIDTH = 800.0f;
+float SCREEN_HEIGHT = 800.0f;
+int BUFFER_WIDTH = 0;
+int BUFFER_HEIGHT = 0;
 
 GLfloat canvasVertices[30] = {
     -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,
@@ -30,7 +32,8 @@ GLuint canvasVBO;
 glm::vec3 color(1.0f, 1.0f, 1.0f);
 ShaderProgram copyShader;
 
-int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image = nullptr);
+int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image);
+int getFrameBuffer(GLuint& frameBuffer, GLuint& texColorBuffer, size_t width, size_t height);
 
 void printHelp(std::ostream& out, const char* programName) {
     out << "usage: " << programName << std::endl;
@@ -49,6 +52,9 @@ public:
     Buffer(Image* image) {
         getFrameBuffer(self, texColor, image);
     }
+    Buffer(size_t w, size_t h) {
+        getFrameBuffer(self, texColor, w, h);
+    }
     ~Buffer() {
         glDeleteFramebuffers(1, &self);
     }
@@ -58,15 +64,58 @@ public:
     }
 };
 
+void printData(char* data, size_t w, size_t h) {
+    printf("\n");
+    unsigned int index = 0;
+    for (unsigned int r = 0; r < h; r++){
+        for(unsigned int c = 0; c < w; c++){
+            printf("%x%x%x ", data[index], data[index+1], data[index+2]);
+            index += 3;
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+void printFrameBuffer(GLuint tex, size_t w, size_t h) {
+    size_t colorSize = 3;
+    char* data = (char*)calloc(w*h, colorSize);
+    //glBindTexture(GL_TEXTURE_2D, tex);
+    //glGetTexImage(tex, 0, GL_RGB, GL_BYTE, (void*)data);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, tex);
+    glReadPixels(0, 0, w, h, GL_RGB, GL_BYTE, data);
+    printData(data, w, h);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    free(data);
+}
+
+void printTexture(GLuint tex, size_t w, size_t h){
+    size_t colorSize = 3;
+    char* data = (char*)calloc(w*h, colorSize);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_BYTE, data);
+    printData(data, w, h);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    free(data);
+}
+
 class Automata {
 public:
     unsigned long int iteration = 0;
     ShaderProgram* program;
+    ShaderProgram& copyProgram;
     Buffer backBuffer;
     Buffer frontBuffer;
+    size_t width;
+    size_t height;
 
-    Automata (ShaderProgram* prog, Image& img) : program(prog), backBuffer(&img), frontBuffer(nullptr) {
-    }
+    Automata (ShaderProgram* prog, ShaderProgram& copyProgram, Image& img) :
+        program(prog),
+        copyProgram(copyProgram),
+        backBuffer(&img),
+        frontBuffer(img.getWidth(), img.getHeight()),
+        width(img.getWidth()),
+        height(img.getHeight())
+    {}
 
     void swap() {
         auto aux = frontBuffer;
@@ -75,10 +124,6 @@ public:
     }
 
     void step() {
-        glBindTexture(GL_TEXTURE_2D, frontBuffer.texColor);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frontBuffer.self); // drawing to the frame buffer now
         glBindFramebuffer(GL_READ_FRAMEBUFFER, backBuffer.self); // drawing to the frame buffer now
         program->use();
@@ -86,15 +131,15 @@ public:
         glBindVertexArray(canvasVAO);
         glBindTexture(GL_TEXTURE_2D, backBuffer.texColor);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glBindTexture(GL_TEXTURE_2D, frontBuffer.texColor);
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-
         glBindVertexArray(0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        //swap();
-        //glBindFramebuffer(GL_FRAMEBUFFER, frontBuffer.self); // drawing to the frame buffer now
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, frontBuffer.self);
+        glBindTexture(GL_TEXTURE_2D, frontBuffer.texColor);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
+        
+        glBindVertexArray(0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         iteration++;
     }
@@ -137,6 +182,7 @@ GLFWwindow * windowInit(){
         glfwTerminate();
         return nullptr;
     }
+    glfwGetFramebufferSize(window, &BUFFER_WIDTH, &BUFFER_HEIGHT);
     glfwMakeContextCurrent(window);
 
     glfwSetKeyCallback(window, key_callback);
@@ -159,7 +205,7 @@ GLFWwindow* init(){
     return window;
 }
 
-int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image) {
+int getFrameBuffer(GLuint& frameBuffer, GLuint& texColorBuffer, size_t width, size_t height){
     // SETUP FRAME BUFFER
     glGenFramebuffers(1, &frameBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -168,11 +214,8 @@ int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image) 
     glGenTextures(1, &texColorBuffer);
     glBindTexture(GL_TEXTURE_2D, texColorBuffer);
     glActiveTexture(GL_TEXTURE0);
-    if (image) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->getData());
-    } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -189,7 +232,36 @@ int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image) 
         return -1;
     }
     
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return 0;
+}
+
+int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image) {
+    // SETUP FRAME BUFFER
+    glGenFramebuffers(1, &frameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+    // frame buffer's color buffer (texture)
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glActiveTexture(GL_TEXTURE0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->getWidth(), image->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image->getData());
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // attaching color buffer to the frame buffer
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // end of the frame buffer creation process
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+        std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer is not complete" << std::endl;
+        glDeleteFramebuffers(1, &frameBuffer);
+        return -1;
+    }
+    
     return 0;
 }
 
@@ -259,8 +331,9 @@ int main(int argc, char** argv){
     std::cout << "Automata Rule: " << automataRule << std::endl;
 
     Image initialState(initialStateFile.c_str());
-    SCREEN_WIDTH = initialState.getWidth();
-    SCREEN_HEIGHT = initialState.getHeight();
+
+    //SCREEN_WIDTH = initialState.getWidth();
+    //SCREEN_HEIGHT = initialState.getHeight();
 
     GLFWwindow * window = init();
     if(!window) return 1;
@@ -286,9 +359,8 @@ int main(int argc, char** argv){
     tempShader.addSymbol("rule110", rule110);
     tempShader.addSymbol("rule111", rule111);
     tempShader.preprocess();
-    VertexShader canvasVertexShader("src/shaders/PostProcessing.vert");
-    FragmentShader canvasFragmentShader(tempShader);
     VertexShader copyVertexShader("src/shaders/SimplePass.vert");
+    FragmentShader canvasFragmentShader(tempShader);
     FragmentShader copyFragmentShader("src/shaders/CopyShader.frag");
 
     ShaderProgram canvasShader(copyVertexShader, canvasFragmentShader, "canvasShader");
@@ -296,15 +368,24 @@ int main(int argc, char** argv){
     canvasShader.use();
     GLuint screenTextureUniform = canvasShader.getUniform("screenTexture");
     canvasShader.setUniform(screenTextureUniform, 0);
-    canvasShader.setUniform("scale", SCREEN_WIDTH, SCREEN_HEIGHT);
+    canvasShader.setUniform("bufferSize", BUFFER_WIDTH, BUFFER_HEIGHT);
+    canvasShader.setUniform("imageSize", initialState.getWidth(), initialState.getHeight());
 
     copyShader.link(copyVertexShader, copyFragmentShader);
 
     copyShader.use();
     copyShader.setUniform("screenTexture", 0);
-    copyShader.setUniform("scale", SCREEN_WIDTH, SCREEN_HEIGHT);
+    copyShader.setUniform("bufferSize", BUFFER_WIDTH, BUFFER_HEIGHT);
+    copyShader.setUniform("imageSize", initialState.getWidth(), initialState.getHeight());
 
-    Automata cellularAutomata(&copyShader, initialState);
+    FragmentShader testFShader("src/shaders/test.frag");
+    ShaderProgram testShader(copyVertexShader, testFShader, "testShader");
+    testShader.use();
+    testShader.setUniform("screenTexture", 0);
+    testShader.setUniform("bufferSize", BUFFER_WIDTH, BUFFER_HEIGHT);
+    testShader.setUniform("imageSize", initialState.getWidth(), initialState.getHeight());
+
+    Automata cellularAutomata(&canvasShader, copyShader, initialState);
     globalAutomata = &cellularAutomata;
     automataProgram = &canvasShader;
 
@@ -322,19 +403,19 @@ int main(int argc, char** argv){
     glBindVertexArray(0);
 
 
-    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    glViewport(0, 0, BUFFER_WIDTH, BUFFER_HEIGHT);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 
 
     while(!glfwWindowShouldClose(window)){
 
         glfwPollEvents();
-        //getchar();
+        getchar();
         
         cellularAutomata.step();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // drawing to the frame buffer now
-        //glBindFramebuffer(GL_READ_FRAMEBUFFER, cellularAutomata.backBuffer.self);
         
         copyShader.use();
         glBindVertexArray(canvasVAO);
@@ -342,15 +423,8 @@ int main(int argc, char** argv){
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 
-        //glBindTexture(GL_TEXTURE_2D, cellularAutomata.backBuffer.texColor);
-        //glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-
-        //DBG("ITER:" << cellularAutomata.iteration);
-        //usleep(500000);
-
         glfwSwapBuffers(window);
         cellularAutomata.swap();
-        // First pass
     }
 
     glfwTerminate();

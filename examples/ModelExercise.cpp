@@ -132,6 +132,13 @@ GLFWwindow* init(){
     return window;
 }
 
+void  addShader(const std::string& vShaderPath, const std::string& fShaderPath, const std::string& name) {
+    VertexShader vShader(vShaderPath);
+    FragmentShader fShader(fShaderPath);
+    ShaderProgram shader(vShader, fShader, name);
+    shaders.push_back(shader);
+}
+
 void setUniforms(glm::mat4& projMatrix, glm::mat4& modelMatrix, PointLightVector& objLightPosUniform) {
 
     unsigned int sIndex = 0;
@@ -224,18 +231,19 @@ int main(int argc, char** argv){
     if(!window) return 1;
 
     Model model(argv[1]);
-    VertexShader vSimpleShader("src/shaders/ModelMaterialVertexLight.vert");
-    FragmentShader fSimpleShader("src/shaders/ModelMaterialVertexLight.frag");
-    ShaderProgram simpleShader(vSimpleShader, fSimpleShader, "simpleShader");
-    shaders.push_back(simpleShader);
-    VertexShader vShader("src/shaders/ModelMaterial.vert");
-    FragmentShader fShader("src/shaders/ModelMaterial.frag");
-    ShaderProgram usualShader(vShader, fShader, "renderingShader");
-    shaders.push_back(usualShader);
-    VertexShader vCellShade("src/shaders/ModelMaterial.vert");
-    FragmentShader fCellShade("src/shaders/ModelMaterialCellShade.frag");
-    ShaderProgram cellShade(vCellShade, fCellShade, "CellShading");
-    shaders.push_back(cellShade);
+
+    addShader("src/shaders/ModelMaterialVertexLight.vert",
+              "src/shaders/ModelMaterialVertexLight.frag",
+              "simpleShader");
+    addShader("src/shaders/ModelMaterial.vert",
+              "src/shaders/ModelMaterial.frag",
+              "usualShader");
+    addShader("src/shaders/ModelMaterial.vert",
+              "src/shaders/ModelMaterialCellShadeFrontalLight.frag",
+              "FrontalCellShadeLight");
+    addShader("src/shaders/ModelMaterial.vert",
+              "src/shaders/ModelMaterialNormals.frag",
+              "NormalVisualization");
 
     currentShader = &(shaders[0]);
 

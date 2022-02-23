@@ -12,8 +12,10 @@
 #include "ShaderProgram.h"
 #include "Camera.h"
 
-float SCREEN_WIDTH = 1024.0f;
-float SCREEN_HEIGHT = 1024.0f;
+float SCREEN_WIDTH = 800.0f;
+float SCREEN_HEIGHT = 800.0f;
+int BUFFER_WIDTH = 0;
+int BUFFER_HEIGHT = 0;
 
 GLfloat canvasVertices[30] = {
     -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,
@@ -65,7 +67,7 @@ public:
 
     void step() {
         glBindTexture(GL_TEXTURE_2D, frontBuffer.texColor);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, BUFFER_WIDTH, BUFFER_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frontBuffer.self); // drawing to the frame buffer now
@@ -77,7 +79,7 @@ public:
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindTexture(GL_TEXTURE_2D, frontBuffer.texColor);
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, BUFFER_WIDTH, BUFFER_HEIGHT, 0);
 
         glBindVertexArray(0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -126,6 +128,7 @@ GLFWwindow * windowInit(){
         glfwTerminate();
         return nullptr;
     }
+    glfwGetFramebufferSize(window, &BUFFER_WIDTH, &BUFFER_HEIGHT);
     glfwMakeContextCurrent(window);
 
     glfwSetKeyCallback(window, key_callback);
@@ -158,9 +161,9 @@ int getFrameBuffer(GLuint & frameBuffer, GLuint & texColorBuffer, Image* image) 
     glBindTexture(GL_TEXTURE_2D, texColorBuffer);
     glActiveTexture(GL_TEXTURE0);
     if (image) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->getData());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->getWidth(), image->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image->getData());
     } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, BUFFER_WIDTH, BUFFER_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -227,8 +230,8 @@ int main(int argc, char** argv){
     }
 
     Image initialState(initialStateFile.c_str());
-    SCREEN_WIDTH = initialState.getWidth();
-    SCREEN_HEIGHT = initialState.getHeight();
+    //SCREEN_WIDTH = initialState.getWidth();
+    //SCREEN_HEIGHT = initialState.getHeight();
 
     GLFWwindow * window = init();
     if(!window) return 1;
@@ -245,13 +248,13 @@ int main(int argc, char** argv){
     canvasShader.use();
     GLuint screenTextureUniform = canvasShader.getUniform("screenTexture");
     canvasShader.setUniform(screenTextureUniform, 0);
-    canvasShader.setUniform("scale", SCREEN_WIDTH, SCREEN_HEIGHT);
+    canvasShader.setUniform("scale", BUFFER_WIDTH, BUFFER_HEIGHT);
 
     copyShader.link(copyVertexShader, copyFragmentShader);
 
     copyShader.use();
     copyShader.setUniform("screenTexture", 0);
-    copyShader.setUniform("scale", SCREEN_WIDTH, SCREEN_HEIGHT);
+    copyShader.setUniform("scale", BUFFER_WIDTH, BUFFER_HEIGHT);
 
     Automata cellularAutomata(&copyShader, initialState);
     globalAutomata = &cellularAutomata;
@@ -271,7 +274,7 @@ int main(int argc, char** argv){
     glBindVertexArray(0);
 
 
-    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    glViewport(0, 0, BUFFER_WIDTH, BUFFER_HEIGHT);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
@@ -292,14 +295,13 @@ int main(int argc, char** argv){
         glBindVertexArray(0);
 
         //glBindTexture(GL_TEXTURE_2D, cellularAutomata.backBuffer.texColor);
-        //glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+        //glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, BUFFER_WIDTH, BUFFER_HEIGHT, 0);
 
         //DBG("ITER:" << cellularAutomata.iteration);
         //usleep(500000);
 
         glfwSwapBuffers(window);
         cellularAutomata.swap();
-        // First pass
     }
 
     glfwTerminate();
