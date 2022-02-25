@@ -102,20 +102,23 @@ class Automata {
 public:
     unsigned long int iteration = 0;
     ShaderProgram* program;
-    ShaderProgram& copyProgram;
     Buffer backBuffer;
     Buffer frontBuffer;
     size_t width;
     size_t height;
+    bool active;
 
-    Automata (ShaderProgram* prog, ShaderProgram& copyProgram, Image& img) :
+    Automata (ShaderProgram* prog, Image& img) :
         program(prog),
-        copyProgram(copyProgram),
         backBuffer(&img),
         frontBuffer(img.getWidth(), img.getHeight()),
         width(img.getWidth()),
-        height(img.getHeight())
+        height(img.getHeight()),
+        active(false)
     {}
+
+    bool isActive() const {return active;}
+    void setActive(bool b) {active = b;}
 
     void swap() {
         auto aux = frontBuffer;
@@ -158,7 +161,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
     if (action == GLFW_PRESS && key == GLFW_KEY_ENTER) {
-        globalAutomata->program = automataProgram;
+        globalAutomata->setActive(true);
         copyShader.setUniform("colorFactor", color.x, color.y, color.z);
     }
 }
@@ -385,7 +388,7 @@ int main(int argc, char** argv){
     testShader.setUniform("bufferSize", BUFFER_WIDTH, BUFFER_HEIGHT);
     testShader.setUniform("imageSize", initialState.getWidth(), initialState.getHeight());
 
-    Automata cellularAutomata(&canvasShader, copyShader, initialState);
+    Automata cellularAutomata(&canvasShader, initialState);
     globalAutomata = &cellularAutomata;
     automataProgram = &canvasShader;
 
@@ -408,10 +411,26 @@ int main(int argc, char** argv){
 
 
 
+    // render first state
+    TextureSampler iniStateTex;
+    iniStateTex.setMinFilter(Texture::FilterValue::NEAREST);
+    iniStateTex.setMagFilter(Texture::FilterValue::NEAREST);
+    iniStateTex.load(initialState, GL_TEXTURE0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // drawing to the frame buffer now
+    copyShader.use();
+    glBindVertexArray(canvasVAO);
+    iniStateTex.activate();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    iniStateTex.unbind();
+    glfwSwapBuffers(window);
+
     while(!glfwWindowShouldClose(window)){
 
         glfwPollEvents();
-        getchar();
+        if (!cellularAutomata.isActive()) {
+            continue;
+        }
         
         cellularAutomata.step();
 

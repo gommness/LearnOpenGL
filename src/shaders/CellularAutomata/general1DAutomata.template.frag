@@ -27,9 +27,9 @@ int getState(int x, int y) {
 }
 
 int rule() {
-    int stateLeft = getState(-1, 1);
-    int stateCenter = getState(0, 1);
-    int stateRight = getState(1, 1);
+    int stateLeft = getState(-1, 0);
+    int stateCenter = getState(0, 0);
+    int stateRight = getState(1, 0);
     
     if(stateLeft == 1) {
         if(stateCenter == 1) {
@@ -70,7 +70,7 @@ void main(){
     //scale = screenSize/bufferSize;
     //scale = bufferSize;
     scale = imageSize;
-    if (gl_FragCoord.y < 1) {
+    if (gl_FragCoord.y <= 1) {
         color = rule()*maxCol;
     } else {
         color = bufferCopy();
