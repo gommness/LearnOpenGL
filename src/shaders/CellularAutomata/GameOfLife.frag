@@ -9,7 +9,10 @@ in vec2 fragTexCoords;
 layout(location = 0) out vec4 color;
 
 uniform sampler2D screenTexture;
-uniform vec2 scale;
+uniform vec2 imageSize;
+uniform vec2 bufferSize;
+
+vec2 scale;
 
 vec4 getCol(int x, int y) {
     vec4 col = texture(screenTexture, (gl_FragCoord.xy+vec2(x, y)) / scale);
@@ -25,6 +28,7 @@ int getState(int x, int y) {
 }
 
 void main(){
+    scale = imageSize;
     int sum = getState(-1, -1) +
               getState(-1,  0) +
               getState(-1,  1) +

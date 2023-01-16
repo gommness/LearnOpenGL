@@ -14,7 +14,9 @@ vec4 maxCol = vec4(1.0, 1.0, 1.0, 1.0);
 vec4 zeroCol = vec4(0.0, 0.0, 0.0, 1.0);
 
 vec4 getCol(int x, int y) {
-    vec4 col = texture(screenTexture, (gl_FragCoord.xy+vec2(x, y)) / scale);
+uniform vec2 imageSize;
+uniform vec2 bufferSize;
+    col = texture(screenTexture, (gl_FragCoord.xy+vec2(x, y)) / scale);
     return col;
 }
 
@@ -69,6 +71,7 @@ vec4 bufferCopy() {
 void main(){
     //scale = screenSize/bufferSize;
     //scale = bufferSize;
+    scale = imageSize;
     scale = imageSize;
     if (gl_FragCoord.y <= 1) {
         color = rule()*maxCol;

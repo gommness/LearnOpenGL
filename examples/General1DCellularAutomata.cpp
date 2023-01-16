@@ -300,6 +300,7 @@ std::string convertToBin(std::string & number) {
 int main(int argc, char** argv){
 
     int option;
+    int timeWait = 0;
     std::string initialStateFile;
     std::string programFile("src/shaders/CellularAutomata/general1DAutomata.template.frag");
     std::string automataRule;
@@ -309,7 +310,7 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    while((option = getopt(argc, argv, ":i:p:r:g:b:R:")) != -1) {
+    while((option = getopt(argc, argv, ":i:p:r:g:b:R:t:")) != -1) {
         switch(option) {
             case 'i':
                 initialStateFile = optarg;
@@ -326,6 +327,8 @@ int main(int argc, char** argv){
             case 'b':
                 color.z = ((float)strToNumber(optarg, 255))/255;
                 break;
+            case 't':
+                timeWait = strToNumber(optarg, 0);
             case 'R':
                 std::string arg = optarg;
                 automataRule = convertToBin(arg);
@@ -362,6 +365,7 @@ int main(int argc, char** argv){
     tempShader.addSymbol("rule110", rule110);
     tempShader.addSymbol("rule111", rule111);
     tempShader.preprocess();
+    std::cout << tempShader.getCode() << std::endl;
     VertexShader copyVertexShader("src/shaders/SimplePass.vert");
     FragmentShader canvasFragmentShader(tempShader);
     FragmentShader copyFragmentShader("src/shaders/CopyShader.frag");
@@ -444,6 +448,8 @@ int main(int argc, char** argv){
 
         glfwSwapBuffers(window);
         cellularAutomata.swap();
+        usleep(timeWait);
+        DBG(timeWait);
     }
 
     glfwTerminate();

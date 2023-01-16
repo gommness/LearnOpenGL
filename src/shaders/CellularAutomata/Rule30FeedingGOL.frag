@@ -13,7 +13,9 @@ in vec2 fragTexCoords;
 layout(location = 0) out vec4 color;
 
 uniform sampler2D screenTexture;
-uniform vec2 scale;
+uniform vec2 imageSize;
+uniform vec2 bufferSize;
+vec2 scale;
 
 vec4 maxCol = vec4(1.0, 1.0, 1.0, 1.0);
 vec4 zeroCol = vec4(0.0, 0.0, 0.0, 1.0);
@@ -137,6 +139,7 @@ void main(){
         color = vec4(0,0,0,0);
     }
     */
+    scale = imageSize;
     //color = texture(screenTexture, (gl_FragCoord.xy) / scale) + vec4(0.4, 0.0, 0.0, 1);
 }
 
